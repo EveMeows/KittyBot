@@ -1,7 +1,13 @@
-using KittyBot;
+using System.Reflection;
 
-var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHostedService<KittyBot>();
+HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
-var host = builder.Build();
+// User Secrets.
+builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly());
+
+// Services.
+builder.Services.AddHostedService<KittyBot.KittyBot>();
+
+// Build and Run.
+IHost host = builder.Build();
 host.Run();

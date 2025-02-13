@@ -1,13 +1,13 @@
-namespace KittyBot
+namespace KittyBot;
+
+public class KittyBot(IConfiguration config) : BackgroundService
 {
-    public class KittyBot : BackgroundService
-    {
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                await Task.Delay(1000, stoppingToken);
-            }
-        }
-    }
+	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+	{
+		while (!stoppingToken.IsCancellationRequested)
+		{
+			Console.WriteLine($"Token: {config["Token"]}");
+			await Task.Delay(1000, stoppingToken);
+		}
+	}
 }
