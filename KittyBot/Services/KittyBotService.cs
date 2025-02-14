@@ -6,6 +6,7 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
+using KittyBot.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using System.Reflection;
@@ -18,7 +19,7 @@ public class KittyBotService(DiscordClient client, IServiceProvider services, IL
 	
 	private async Task SlashErrored(SlashCommandsExtension s, SlashCommandErrorEventArgs e)
 	{
-		logger.Log(LogLevel.Error, "Failed to Execute command: {}", e.Exception.Message);
+		logger.LogError("Failed to Execute command: {}", e.Exception.Message);
 		
 		try
 		{
@@ -36,7 +37,60 @@ public class KittyBotService(DiscordClient client, IServiceProvider services, IL
 
 	private async Task ClientReady(DiscordClient sender, ReadyEventArgs args)
 	{
-		logger.Log(LogLevel.Information, "Logged in as {}", sender.CurrentUser);
+		logger.LogInformation("Logged in as {}", sender.CurrentUser);
+	}
+
+	private async Task MessageCreated(DiscordClient sender, MessageCreateEventArgs args)
+	{
+		// Return if the author is a bot.
+		if (args.Author.IsBot) return;
+
+		await using PostgreService context = await factory.CreateDbContextAsync();
+
+		Guild? guild = await context.Guilds.Include(g => g.Users).FirstOrDefaultAsync(g => g.ID == args.Guild.Id);
+		if (guild is null) return;
+
+		// Find the user
+		// And create if doesn't exist.
+		User? user = guild.Users.FirstOrDefault(u => u.ID == args.Author.Id);
+		if (user is null)
+		{
+			user = new User
+			{
+				ID = args.Author.Id,
+				Coins = 0,
+				XP = 1,
+				XPNext = 20,
+				XPStep = 1,
+				Level = 1
+			};
+
+			guild.Users.Add(user);
+			await context.Users.AddAsync(user);
+		}
+		else
+		{ 
+			user.XP += user.XPStep;
+			if (user.XP >= user.XPNext)
+			{
+				user.Level++;
+				
+				if (user.XP - user.XPNext > 0) user.XP -= user.XPNext;
+				else user.XP = 0;
+
+				user.XPNext = (uint)Math.Floor(Math.Pow(user.Level / context.LevelIncrease, context.LevelGap));
+
+				// Congratulate
+				await sender.SendMessageAsync(
+					args.Channel,
+					$"Congratulations {args.Author.Mention}! You've reached level {user.Level}!"
+				);
+			}
+		}
+
+		context.Guilds.Update(guild);
+
+		await context.SaveChangesAsync();
 	}
 
 	#endregion
@@ -45,11 +99,11 @@ public class KittyBotService(DiscordClient client, IServiceProvider services, IL
 	{
 		await using PostgreService context = await factory.CreateDbContextAsync();
 
-		// bool deleted = context.Database.EnsureDeleted();
-		// logger.Log(LogLevel.Information, "DataBase erasure status: {}", deleted ? "success" : "failure");
+		bool deleted = context.Database.EnsureDeleted();
+		logger.LogInformation("DataBase erasure status: {}", deleted ? "success" : "failure");
 
 		bool recreated = context.Database.EnsureCreated();
-		logger.Log(LogLevel.Information, "DataBase creation status: {}", recreated ? "success" : "failure");
+		logger.LogInformation("DataBase creation status: {}", recreated ? "success" : "failure");
 
 	}
 
@@ -61,6 +115,8 @@ public class KittyBotService(DiscordClient client, IServiceProvider services, IL
 		await ReleaseDatabase();
 
 		client.Ready += ClientReady;
+		client.MessageCreated += MessageCreated;
+
 		client.UseInteractivity(new InteractivityConfiguration { Timeout = TimeSpan.FromSeconds(30) });
 
 		SlashCommandsExtension slash = client.UseSlashCommands(new SlashCommandsConfiguration { 
@@ -75,7 +131,7 @@ public class KittyBotService(DiscordClient client, IServiceProvider services, IL
 
 	public async Task StopAsync(CancellationToken cancellationToken)
 	{
-		logger.Log(LogLevel.Information, "Client disconnecting.");
+		logger.LogInformation("Client disconnecting.");
 		await client.DisconnectAsync();
 	}
 }

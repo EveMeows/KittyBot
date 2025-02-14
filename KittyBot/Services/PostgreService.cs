@@ -3,7 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KittyBot.Services;
 
-public class PostgreService(IConfiguration config) : DbContext{
+public class PostgreService(IConfiguration config) : DbContext
+{
+	public float LevelIncrease = 0.15f;
+	public float LevelGap = 2;
+
 	public DbSet<Guild> Guilds { get; set; }
 	public DbSet<User> Users { get; set; }
 	

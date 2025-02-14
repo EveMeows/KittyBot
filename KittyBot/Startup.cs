@@ -12,7 +12,8 @@ builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly());
 builder.Services.AddSingleton(x => 
 	new DiscordClient(new DiscordConfiguration { 
 		Token = x.GetRequiredService<IConfiguration>()["Token"], 
-		Intents = DiscordIntents.AllUnprivileged
+		Intents = DiscordIntents.AllUnprivileged | DiscordIntents.GuildMembers | 
+			DiscordIntents.MessageContents | DiscordIntents.GuildPresences
 	})
 );
 
