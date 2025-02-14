@@ -42,7 +42,7 @@ public class AdministrationCommands(IDbContextFactory<PostgreService> factory, I
 		{ 
 			await ctx.CreateResponseAsync(
 				InteractionResponseType.ChannelMessageWithSource,
-				new DSharpPlus.Entities.DiscordInteractionResponseBuilder()
+				new DiscordInteractionResponseBuilder()
 					.WithContent("Your guild is already enrolled into the database!")
 					.AsEphemeral()
 			);
@@ -53,7 +53,7 @@ public class AdministrationCommands(IDbContextFactory<PostgreService> factory, I
 		Guild enroll = new Guild
 		{
 			ID = ctx.Guild.Id,
-			Users = new List<User>()
+			Users = []
 		};
 
 		await context.Guilds.AddAsync(enroll);
@@ -61,7 +61,7 @@ public class AdministrationCommands(IDbContextFactory<PostgreService> factory, I
 
 		await ctx.CreateResponseAsync(
 			InteractionResponseType.ChannelMessageWithSource,
-			new DSharpPlus.Entities.DiscordInteractionResponseBuilder()
+			new DiscordInteractionResponseBuilder()
 				.WithContent("Thank you! You are now part of the family!")
 		);
 	}
@@ -91,7 +91,7 @@ public class AdministrationCommands(IDbContextFactory<PostgreService> factory, I
 		}
 
 		user ??= ctx.User;
-		if (user.IsBot || xp < 0)
+		if (user.IsBot || xp <= 0 || xp > uint.MaxValue)
 		{
 			await ctx.CreateResponseAsync(
 				InteractionResponseType.ChannelMessageWithSource,

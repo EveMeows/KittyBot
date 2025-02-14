@@ -13,7 +13,7 @@ public class PostgreService(IConfiguration config) : DbContext
 	
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 	{
-		string? connection = config.GetValue<string>("ConnectionString") 
+		string connection = config.GetValue<string>("ConnectionString") 
 			?? throw new InvalidOperationException("Cannot find Connection String");
 
 		optionsBuilder.UseNpgsql(connection);

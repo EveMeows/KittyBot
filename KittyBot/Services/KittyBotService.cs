@@ -24,7 +24,7 @@ public class KittyBotService(DiscordClient client, IServiceProvider services, IL
 		try
 		{
 			await e.Context.CreateResponseAsync(
-				"An error occurred while executing the command!"
+				"An error occurred while executing the command!", true
 			);
 		}
 		catch (BadRequestException)
@@ -35,9 +35,11 @@ public class KittyBotService(DiscordClient client, IServiceProvider services, IL
 		}
 	}
 
-	private async Task ClientReady(DiscordClient sender, ReadyEventArgs args)
+
+	private Task ClientReady(DiscordClient sender, ReadyEventArgs args)
 	{
 		logger.LogInformation("Logged in as {}", sender.CurrentUser);
+		return Task.CompletedTask;
 	}
 
 	private async Task MessageCreated(DiscordClient sender, MessageCreateEventArgs args)
@@ -58,10 +60,8 @@ public class KittyBotService(DiscordClient client, IServiceProvider services, IL
 			user = new User
 			{
 				ID = args.Author.Id,
-				Coins = 0,
-				XP = 1,
-				XPNext = 20,
-				XPStep = 1,
+				Coins = 0, XP = 1,
+				XPNext = 20, XPStep = 1,
 				Level = 1
 			};
 
@@ -71,21 +71,23 @@ public class KittyBotService(DiscordClient client, IServiceProvider services, IL
 		else
 		{ 
 			user.XP += user.XPStep;
-			if (user.XP >= user.XPNext)
+			int advanced = 0;
+			while (user.XP >= user.XPNext)
 			{
-				user.Level++;
-				
-				if (user.XP - user.XPNext > 0) user.XP -= user.XPNext;
-				else user.XP = 0;
+				user.XP -= user.XPNext;
 
+				user.Level++;
 				user.XPNext = (uint)Math.Floor(Math.Pow(user.Level / context.LevelIncrease, context.LevelGap));
 
-				// Congratulate
-				await sender.SendMessageAsync(
-					args.Channel,
-					$"Congratulations {args.Author.Mention}! You've reached level {user.Level}!"
-				);
+				advanced++;
 			}
+
+			// Congratulate
+			await sender.SendMessageAsync(
+				args.Channel,
+				$"Congratulations {args.Author.Mention}! You've reached level {user.Level}{(advanced > 1 ? $" and you've advanced {advanced} levels at once!" : "!")}"
+			);
+
 		}
 
 		context.Guilds.Update(guild);
