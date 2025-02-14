@@ -6,12 +6,16 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using System.Reflection;
 
 namespace KittyBot.Services;
 
-public class KittyBotService(DiscordClient client, IServiceProvider services, ILogger<KittyBotService> logger) : IHostedService
+public class KittyBotService(DiscordClient client, IServiceProvider services, ILogger<KittyBotService> logger, IDbContextFactory<PostgreService> factory) : IHostedService
 {
+	#region Events
+	
 	private async Task SlashErrored(SlashCommandsExtension s, SlashCommandErrorEventArgs e)
 	{
 		logger.Log(LogLevel.Error, "Failed to Execute command: {}", e.Exception.Message);
@@ -35,9 +39,27 @@ public class KittyBotService(DiscordClient client, IServiceProvider services, IL
 		logger.Log(LogLevel.Information, "Logged in as {}", sender.CurrentUser);
 	}
 
+	#endregion
+
+	private async Task ReleaseDatabase()
+	{
+		await using PostgreService context = await factory.CreateDbContextAsync();
+
+		// bool deleted = context.Database.EnsureDeleted();
+		// logger.Log(LogLevel.Information, "DataBase erasure status: {}", deleted ? "success" : "failure");
+
+		bool recreated = context.Database.EnsureCreated();
+		logger.Log(LogLevel.Information, "DataBase creation status: {}", recreated ? "success" : "failure");
+
+	}
 
 	public async Task StartAsync(CancellationToken cancellationToken)
 	{
+		//! Testing Purposes ONLY
+		//! Only ran during prototyping...
+		//! We erase the db then create it again.
+		await ReleaseDatabase();
+
 		client.Ready += ClientReady;
 		client.UseInteractivity(new InteractivityConfiguration { Timeout = TimeSpan.FromSeconds(30) });
 

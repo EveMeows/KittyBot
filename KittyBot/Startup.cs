@@ -1,5 +1,6 @@
 using DSharpPlus;
 using KittyBot.Services;
+using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
@@ -14,6 +15,9 @@ builder.Services.AddSingleton(x =>
 		Intents = DiscordIntents.AllUnprivileged
 	})
 );
+
+// Register DataBase
+builder.Services.AddDbContextFactory<PostgreService>();
 
 builder.Services.AddHostedService<KittyBotService>();
 
