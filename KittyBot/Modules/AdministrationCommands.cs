@@ -116,16 +116,11 @@ public class AdministrationCommands(IDbContextFactory<PostgreService> factory, I
 			return;
 		}
 
-		contextUser.XP = (uint)xp;
+		contextUser.XP += (uint)xp;
 
 		// Handle XP.
 		while (contextUser.XP >= contextUser.XPNext)
-		{
-			contextUser.XP -= contextUser.XPNext;
-
-			contextUser.Level++;
-			contextUser.XPNext = (uint)Math.Floor(Math.Pow(contextUser.Level / context.LevelIncrease, context.LevelGap));
-		} 
+			context.HandleLevelUp(contextUser);
 
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync();
@@ -133,7 +128,70 @@ public class AdministrationCommands(IDbContextFactory<PostgreService> factory, I
 		await ctx.CreateResponseAsync(
 			InteractionResponseType.ChannelMessageWithSource,
 			new DiscordInteractionResponseBuilder()
-				.WithContent($"Succesfully gave {user.Username} {xp} XP")
+				.WithContent($"Succesfully gave {user.Username} {xp} XP!")
+				.AsEphemeral()
+		);
+	}
+
+	[SlashCommand("addcoins", "Give coins to a certain user.")]
+	public async Task AddCoinsCommand(
+		InteractionContext ctx,
+		[Option("coins", "The amount of coins to give.")] long coins,
+		[Option("user", "The user to give the coins to.")] DiscordUser user = null
+	)
+	{ 
+		if (!await CheckAdmin(ctx)) return;
+
+		await using PostgreService context = await factory.CreateDbContextAsync();
+
+		Guild? guild = await context.Guilds.Include(g => g.Users).FirstOrDefaultAsync(g => g.ID == ctx.Guild.Id);
+		if (guild is null)
+		{
+			await ctx.CreateResponseAsync(
+				InteractionResponseType.ChannelMessageWithSource,
+				new DiscordInteractionResponseBuilder()
+					.WithContent("Your guild is not registered in the database!")
+					.AsEphemeral()
+			);
+
+			return;
+		}
+
+		user ??= ctx.User;
+		if (user.IsBot || coins <= 0 || coins > uint.MaxValue)
+		{
+			await ctx.CreateResponseAsync(
+				InteractionResponseType.ChannelMessageWithSource,
+				new DiscordInteractionResponseBuilder()
+					.WithContent("You can't do that!")
+					.AsEphemeral()
+			);
+
+			return;
+		}
+
+		User? contextUser = guild.Users.FirstOrDefault(u => u.ID == user.Id);
+		if (contextUser is null)
+		{
+			await ctx.CreateResponseAsync(
+				InteractionResponseType.ChannelMessageWithSource,
+				new DiscordInteractionResponseBuilder()
+					.WithContent($"{(user == ctx.User ? "You are" : "That user is")} not registered in the database!")
+					.AsEphemeral()
+			);
+
+			return;
+		}
+
+		contextUser.Coins += (uint)coins;
+
+		context.Guilds.Update(guild);
+		await context.SaveChangesAsync();
+
+		await ctx.CreateResponseAsync(
+			InteractionResponseType.ChannelMessageWithSource,
+			new DiscordInteractionResponseBuilder()
+				.WithContent($"Succesfully gave {user.Username} {coins} coins!")
 				.AsEphemeral()
 		);
 	}
