@@ -1,11 +1,13 @@
 #pragma once
 
 #include "util.h"
+
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
+
 namespace Kitty
 {
     /// @brief parse a .env file, in the root directory.
