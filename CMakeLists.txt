@@ -3,19 +3,24 @@ project(KittyBot VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 20)
 
-option (USE_EMBEDDED "Use embedded DPP." ON)
+# Export compile_commands.json for clangd to see.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+option (USE_EMBEDDED_DPP "Use embedded DPP." ON)
+option (USE_EMBEDDED_CPR "Use embedded CPR." ON)
 
 # Copy .env to output.
 file(COPY ".env" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+
+include(FetchContent)
 
 find_package(DPP QUIET)
 
 # Handle DPP if not found
 if (NOT DPP_FOUND)
-    if (USE_EMBEDDED)
+    if (USE_EMBEDDED_DPP)
         message(STATUS "DPP (The Discord API wrapper) has not been found. Using Built-in.")
 
-        include(FetchContent)
         FetchContent_Declare(
             dpp
             GIT_REPOSITORY https://github.com/brainboxdotcc/DPP
@@ -25,7 +30,7 @@ if (NOT DPP_FOUND)
         FetchContent_MakeAvailable(dpp)
     else()
         message(SEND_ERROR
-            "DPP (The Discord API wrapper) has not been found and USE_EMBEDDED is disabled.
+            "DPP (The Discord API wrapper) has not been found and USE_EMBEDDED_DPP is disabled.
             Please install it on your system by following this link: \"https://dpp.dev/installing.html\""
         )
     endif()
@@ -33,9 +38,34 @@ else()
     message(STATUS "DPP (The Discord API wrapper) has been found inside the system. Prioritising.")
 endif()
 
+# CPR (Curl For People) C++ edition lol
+find_package(CPR QUIET)
+if (NOT DPP_FOUND)
+    if (USE_EMBEDDED_CPR)
+        message(STATUS "CPR has not been found. Using Built-in.")
+
+        # We use latest preview because why not :shrug:
+        FetchContent_Declare(
+            cpr
+            GIT_REPOSITORY https://github.com/libcpr/cpr
+            GIT_TAG master
+        )
+
+        FetchContent_MakeAvailable(cpr)
+    else()
+        message(SEND_ERROR
+            "CPR has not been found and USE_EMBEDDED_CPR is disabled.
+            Please install it on your system and try again."
+        )
+    endif()
+else()
+    message(STATUS "CPR has been found inside the system. Prioritising.")
+endif()
+
 
 add_executable(${PROJECT_NAME}
     KittyBot/Sources/main.cpp
+    KittyBot/Sources/Services/nekosia.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -43,5 +73,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    dpp
+    dpp cpr
 )

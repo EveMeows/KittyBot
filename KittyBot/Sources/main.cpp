@@ -1,3 +1,4 @@
+#include "Commands/kitty.h"
 #include "Commands/manager.h"
 #include "Commands/ping.h"
 #include "parse_env.h"
@@ -45,6 +46,7 @@ int main()
     // Create command manager.
     Kitty::Commands::CommandManager manager(&client);
     manager.enroll<Kitty::Commands::Ping>();
+    manager.enroll<Kitty::Commands::Kitty>();
 
     client.on_slashcommand([&manager](const dpp::slashcommand_t &event) {
         manager.handle(event);
