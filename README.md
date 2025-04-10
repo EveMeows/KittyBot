@@ -8,7 +8,8 @@ So far, this project is only a proof of concept.
 To run this bot yourself, you will need to create a .env file in the project root.
 
 It must look something like this;
-```env
+```bash
+# Do NOT use QUOTES ("") for the token.
 KITTY_TOKEN=mycooltokenhere
 ```
 And the project should look like this.

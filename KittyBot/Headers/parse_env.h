@@ -14,7 +14,7 @@ namespace Kitty
         const std::string base = Kitty::Util::get_base_directory();
         if (base == "")
         {
-            std::cerr << "ERROR: PARSE_ENV: Cannot get base binary path.";
+            std::cerr << "ERROR: PARSE_ENV: Cannot get base binary path.\n";
             return;
         }
 
