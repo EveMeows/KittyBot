@@ -36,7 +36,7 @@ namespace Kitty::Commands
                 if (*ping)
                 {
                     res = std::format(
-                        "Pong! I am made in C++.\n My ping is approx. {:.3f}ms!",
+                        "Pong! I am made in C++.\nMy ping is approx. {:.3f}ms!",
                         this->m_client->rest_ping
                     );
                 }

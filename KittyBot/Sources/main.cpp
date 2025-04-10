@@ -2,12 +2,25 @@
 #include "Commands/ping.h"
 #include "parse_env.h"
 
+#include <csignal>
 #include <cstdlib>
+#include <functional>
 
 #include <dpp/cluster.h>
 #include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
 #include <dpp/misc-enum.h>
+
+// Global handler :/
+std::function<void()> signal_handle;
+void exit_handler(int signal)
+{
+    if (signal == SIGINT)
+    {
+        if (signal_handle) signal_handle();
+        exit(0);
+    }
+}
 
 int main()
 {
@@ -17,6 +30,14 @@ int main()
 
     // Create client cluster
     dpp::cluster client(token);
+
+    // Register the signal handler.
+    signal_handle = [&client]() {
+        client.log(dpp::loglevel::ll_info, "Ending Discord session. Goodbye!");
+        client.shutdown();
+    };
+
+    std::signal(SIGINT, exit_handler);
 
     // Create logging service
     client.on_log(dpp::utility::cout_logger());
