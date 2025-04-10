@@ -1,0 +1,5 @@
+CompileFlags:
+  Add: [-Wall]
+  Compiler: clang++
+
+  CompilationDatabase: build
