@@ -40,7 +40,7 @@ endif()
 
 # CPR (Curl For People) C++ edition lol
 find_package(CPR QUIET)
-if (NOT DPP_FOUND)
+if (NOT CPR_FOUND)
     if (USE_EMBEDDED_CPR)
         message(STATUS "CPR has not been found. Using Built-in.")
 
@@ -62,6 +62,14 @@ else()
     message(STATUS "CPR has been found inside the system. Prioritising.")
 endif()
 
+find_package(mariadb-connector-cpp QUIET)
+if (NOT mariadb-connector-cpp_FOUND)
+    message(SEND_ERROR
+        "The MariaDB C++ Connector has not been found. Please install it on your system and try again."
+    )
+else()
+    message(STATUS "The MariaDB C++ Connector has been found inside the system. Prioritising.")
+endif()
 
 add_executable(${PROJECT_NAME}
     KittyBot/Sources/main.cpp
@@ -73,5 +81,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    dpp cpr
+    dpp::dpp cpr::cpr
+    mariadb-connector-cpp::mariadb-connector-cpp
 )
