@@ -3,7 +3,7 @@
 #include <cpr/api.h>
 #include <cpr/cpr.h>
 
-#include "Services/service_response.h"
+#include "Services/api_service_response.h"
 
 #include <cpr/response.h>
 #include <format>
@@ -11,7 +11,7 @@
 
 namespace Kitty::Services
 {
-  class Service
+  class ApiService
   {
   public:
     std::string url;
@@ -19,7 +19,7 @@ namespace Kitty::Services
     std::string get() const
     {
       // JSON is provided by DPP.
-      cpr::Url url = cpr::Url { this->url };
+      cpr::Url url = cpr::Url{this->url};
       cpr::Response res = cpr::Get(url);
 
       if (res.status_code != 200)
@@ -30,6 +30,6 @@ namespace Kitty::Services
       return res.text;
     };
 
-    virtual ServiceResponse fetch() = 0;
+    virtual ApiServiceResponse fetch() = 0;
   };
-}
+} // namespace Kitty::Services

@@ -1,18 +1,18 @@
 #pragma once
 
-#include "Services/service.h"
-#include "Services/service_response.h"
+#include "Services/api_service.h"
+#include "Services/api_service_response.h"
+
 namespace Kitty::Services
 {
-
-  class Nekosia : public Service
+  class Nekosia : public ApiService
   {
   public:
     Nekosia()
     {
       this->url = "https://api.nekosia.cat/api/v1/images/catgirl";
     }
-    
-    ServiceResponse fetch() override;
+
+    ApiServiceResponse fetch() override;
   };
-}
+} // namespace Kitty::Services

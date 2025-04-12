@@ -62,6 +62,7 @@ else()
     message(STATUS "CPR has been found inside the system. Prioritising.")
 endif()
 
+# Let conan handle this mess :3
 find_package(mariadb-connector-cpp QUIET)
 if (NOT mariadb-connector-cpp_FOUND)
     message(SEND_ERROR
