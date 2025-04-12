@@ -1,0 +1,7 @@
+UseTab: Never
+TabWidth: 2
+
+BreakBeforeBraces: Allman
+NamespaceIndentation: All
+
+AllowShortFunctionsOnASingleLine: None
