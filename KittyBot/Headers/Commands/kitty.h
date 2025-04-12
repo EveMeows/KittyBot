@@ -4,13 +4,13 @@
 #include "Services/api_service.h"
 #include "Services/api_service_response.h"
 #include "Services/nekosia.h"
+#include "Services/shared_services.h"
 
-#include <ctime>
 #include <dpp/cluster.h>
-
 #include <dpp/colors.h>
 #include <dpp/dispatcher.h>
 #include <memory>
+#include <ctime>
 
 namespace Kitty::Commands
 {
@@ -21,7 +21,7 @@ namespace Kitty::Commands
     std::unique_ptr<Services::ApiService> m_api_service;
 
   public:
-    Kitty(dpp::cluster *client)
+    Kitty(dpp::cluster *client, std::shared_ptr<Services::SharedServices> services)
         : SlashCommand("kitty", "Fetch a silly little picture!")
     {
       this->m_client = client;

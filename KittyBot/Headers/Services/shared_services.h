@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Kitty
+namespace Kitty::Services
 {
   struct SharedServices
   {

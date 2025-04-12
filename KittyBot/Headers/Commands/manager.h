@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Commands/slash_command.h"
+#include "Services/shared_services.h"
 
 #include <dpp/cluster.h>
 #include <dpp/dispatcher.h>
@@ -18,18 +19,23 @@ namespace Kitty::Commands
   {
   private:
     std::vector<std::unique_ptr<SlashCommand>> m_commands;
+    std::shared_ptr<Services::SharedServices> m_services;
     dpp::cluster *m_client = nullptr;
 
   public:
-    CommandManager(dpp::cluster *client) : m_client(client) {};
+    CommandManager(dpp::cluster *client, std::shared_ptr<Services::SharedServices> services) : m_client(client), m_services(services) {};
 
     template <typename TCommand, typename... TArgs> void enroll(TArgs &&...args)
     {
-      static_assert(std::is_base_of<SlashCommand, TCommand>::value,
-                    "TCommand must be derived from SlashCommand.");
+      static_assert(
+        std::is_base_of<SlashCommand, TCommand>::value,
+        "TCommand must be derived from SlashCommand."
+      );
 
       std::unique_ptr<TCommand> command = std::make_unique<TCommand>(
-          this->m_client, std::forward<TArgs>(args)...);
+        this->m_client, this->m_services, std::forward<TArgs>(args)...
+      );
+      
       this->m_commands.emplace_back(std::move(command));
     }
 
@@ -39,10 +45,13 @@ namespace Kitty::Commands
       for (const std::unique_ptr<SlashCommand> &command : this->m_commands)
       {
         this->m_client->global_command_create(
-            command->get_dpp_command(this->m_client->me.id));
+          command->get_dpp_command(this->m_client->me.id)
+        );
 
-        this->m_client->log(dpp::loglevel::ll_info,
-                            std::format("Created command {}.", command->name));
+        this->m_client->log(
+          dpp::loglevel::ll_info,
+          std::format("Created command {}.", command->name)
+        );
       }
     }
 

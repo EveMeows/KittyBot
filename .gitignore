@@ -2,3 +2,4 @@
 
 # Where the token and other API keys go.
 .env
+**/.cache

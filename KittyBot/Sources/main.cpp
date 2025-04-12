@@ -1,6 +1,7 @@
 #include "Commands/kitty.h"
 #include "Commands/manager.h"
 #include "Commands/ping.h"
+#include "Services/shared_services.h"
 #include "parse_env.h"
 
 #include <csignal>
@@ -11,6 +12,7 @@
 #include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
 #include <dpp/misc-enum.h>
+#include <memory>
 
 // Global handler :/
 std::function<void()> signal_handle;
@@ -30,6 +32,10 @@ int main()
   Kitty::parse_env();
   std::string token = getenv("KITTY_TOKEN");
 
+  // Create shared service data
+  std::shared_ptr<Kitty::Services::SharedServices> services =
+    std::make_shared<Kitty::Services::SharedServices>();
+
   // Create client cluster
   dpp::cluster client(token);
 
@@ -45,7 +51,7 @@ int main()
   client.on_log(dpp::utility::cout_logger());
 
   // Create command manager.
-  Kitty::Commands::CommandManager manager(&client);
+  Kitty::Commands::CommandManager manager(&client, services);
   manager.enroll<Kitty::Commands::Ping>();
   manager.enroll<Kitty::Commands::Kitty>();
 

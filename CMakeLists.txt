@@ -8,6 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option (USE_EMBEDDED_DPP "Use embedded DPP." ON)
 option (USE_EMBEDDED_CPR "Use embedded CPR." ON)
+option (USE_EMBEDDED_MARIADB "Use embedded C/C++ Connector." ON)
 
 # Copy .env to output.
 file(COPY ".env" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
@@ -63,11 +64,24 @@ else()
 endif()
 
 # Let conan handle this mess :3
-find_package(mariadb-connector-cpp QUIET)
-if (NOT mariadb-connector-cpp_FOUND)
-    message(SEND_ERROR
-        "The MariaDB C++ Connector has not been found. Please install it on your system and try again."
-    )
+find_package(MariaDB QUIET)
+if (NOT MariaDB_FOUND)
+    if (USE_EMBEDDED_MARIADB)
+        message(STATUS "The C/C++ Connector has not been found. Using Built-in.")
+
+        set(WITH_UNIT_TESTS OFF CACHE BOOL "Disable MariaDB connector unit tests" FORCE)
+        FetchContent_Declare(
+            MariaDB
+            GIT_REPOSITORY https://github.com/mariadb-corporation/mariadb-connector-cpp
+            GIT_TAG master 
+        )
+
+        FetchContent_MakeAvailable(MariaDB)
+    else()
+        message(SEND_ERROR
+            "The MariaDB C++ Connector has not been found. Please install it on your system and try again."
+        )
+    endif()
 else()
     message(STATUS "The MariaDB C++ Connector has been found inside the system. Prioritising.")
 endif()
@@ -82,6 +96,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    dpp::dpp cpr::cpr
-    mariadb-connector-cpp::mariadb-connector-cpp
+    dpp cpr
+    MariaDB::mariadbcpp
 )

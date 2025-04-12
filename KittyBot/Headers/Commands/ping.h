@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Commands/slash_command.h"
+#include "Services/shared_services.h"
 
 #include <dpp/appcommand.h>
 #include <dpp/cluster.h>
@@ -18,7 +19,7 @@ namespace Kitty::Commands
     dpp::cluster *m_client;
 
   public:
-    Ping(dpp::cluster *client) : SlashCommand("ping", "Pong!")
+    Ping(dpp::cluster *client, std::shared_ptr<Services::SharedServices> services) : SlashCommand("ping", "Pong!")
     {
       this->m_client = client;
     };
