@@ -8,7 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option (USE_EMBEDDED_DPP "Use embedded DPP." ON)
 option (USE_EMBEDDED_CPR "Use embedded CPR." ON)
-option (USE_EMBEDDED_MARIADB "Use embedded C/C++ Connector." ON)
+option (USE_EMBEDDED_PG "Use embedded C/C++ Connector." ON)
 
 # Copy .env to output.
 file(COPY ".env" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
@@ -40,8 +40,8 @@ else()
 endif()
 
 # CPR (Curl For People) C++ edition lol
-find_package(CPR QUIET)
-if (NOT CPR_FOUND)
+find_package(cpr QUIET)
+if (NOT cpr_FOUND)
     if (USE_EMBEDDED_CPR)
         message(STATUS "CPR has not been found. Using Built-in.")
 
@@ -63,27 +63,31 @@ else()
     message(STATUS "CPR has been found inside the system. Prioritising.")
 endif()
 
-# Let conan handle this mess :3
-find_package(MariaDB QUIET)
-if (NOT MariaDB_FOUND)
-    if (USE_EMBEDDED_MARIADB)
-        message(STATUS "The C/C++ Connector has not been found. Using Built-in.")
+# Postgre stuff
+find_package(libpqxx QUIET)
+if (NOT libpqxx_FOUND)
+    if (USE_EMBEDDED_PG)
+        message(STATUS "The C++ Connector has not been found inside the system. Using Built-in.")
 
-        set(WITH_UNIT_TESTS OFF CACHE BOOL "Disable MariaDB connector unit tests" FORCE)
+        set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries")
+        set(BUILD_STATIC_LIBS OFF CACHE BOOL "Build static libraries")
+        set(SKIP_BUILD_TEST ON CACHE BOOL "Skip building tests")
+
         FetchContent_Declare(
-            MariaDB
-            GIT_REPOSITORY https://github.com/mariadb-corporation/mariadb-connector-cpp
-            GIT_TAG master 
+            libpqxx
+            GIT_REPOSITORY https://github.com/jtv/libpqxx
+            GIT_TAG master
         )
 
-        FetchContent_MakeAvailable(MariaDB)
+        FetchContent_MakeAvailable(libpqxx)
     else()
         message(SEND_ERROR
-            "The MariaDB C++ Connector has not been found. Please install it on your system and try again."
+            "The C++ Connector has not been found and USE_EMBEDDED_PG is disabled.
+            Please install it on your system and try again."
         )
     endif()
 else()
-    message(STATUS "The MariaDB C++ Connector has been found inside the system. Prioritising.")
+    message(STATUS "The C++ Connector has been found inside the system. Prioritising.")
 endif()
 
 add_executable(${PROJECT_NAME}
@@ -97,5 +101,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     dpp cpr
-    MariaDB::mariadbcpp
+    pqxx
 )
