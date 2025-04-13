@@ -15,14 +15,16 @@
 #include <memory>
 
 // Global handler :/
-std::function<void()> signal_handle;
-void exit_handler(int signal)
-{
-  if (signal == SIGINT)
+namespace {
+  std::function<void()> signal_handle;
+  void exit_handler(int signal)
   {
-    if (signal_handle)
-      signal_handle();
-    exit(0);
+    if (signal == SIGINT)
+    {
+      if (signal_handle)
+        signal_handle();
+      exit(0);
+    }
   }
 }
 
@@ -57,7 +59,7 @@ int main()
 
   client.on_slashcommand(
     [&manager](const dpp::slashcommand_t &event) {
-       manager.handle(event);
+      manager.handle(event);
     }
   );
 

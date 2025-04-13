@@ -15,9 +15,8 @@ file(COPY ".env" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
 include(FetchContent)
 
+# DPP (Discord Client Library).
 find_package(DPP QUIET)
-
-# Handle DPP if not found
 if (NOT DPP_FOUND)
     if (USE_EMBEDDED_DPP)
         message(STATUS "DPP (The Discord API wrapper) has not been found. Using Built-in.")
