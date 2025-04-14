@@ -19,8 +19,7 @@ namespace Kitty::Commands
     virtual ~SlashCommand() = default;
 
     template <typename T>
-    std::optional<T> param(const std::string name,
-                           const dpp::slashcommand_t &event) const
+    std::optional<T> param(const std::string name, const dpp::slashcommand_t &event) const
     {
       const dpp::command_value &param = event.get_parameter(name);
       if (param.index() != 0)
@@ -47,6 +46,12 @@ namespace Kitty::Commands
     virtual dpp::slashcommand get_dpp_command(dpp::snowflake bot_id) const
     {
       dpp::slashcommand cmd(this->name, this->description, bot_id);
+
+      if (this->m_permissions != 0)
+      {
+        cmd.set_default_permissions(this->m_permissions);
+      }
+      
       for (const dpp::command_option &opt : this->options())
       {
         cmd.add_option(opt);
@@ -54,5 +59,11 @@ namespace Kitty::Commands
 
       return cmd;
     }
+  protected:
+    /**
+    * @brief The required permissions for the command, by default everyone is allowed.
+    * @note This must be set ONLY in the constructor. Nothing will happen if the command is already registered.
+    */
+    dpp::permission m_permissions = 0;
   };
 } // namespace Kitty::Commands
