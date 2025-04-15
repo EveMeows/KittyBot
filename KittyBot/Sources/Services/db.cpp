@@ -16,11 +16,9 @@ Kitty::Models::KUser Kitty::Services::DB::ensure_user(std::shared_ptr<Services::
 
     pqxx::result res = trans.exec_params(R"(
         SELECT
-          m.id, gm.coins, gm.xp, gm.xpstep, gm.xpnext, gm.level
+          gm.memberid, gm.coins, gm.xp, gm.xpstep, gm.xpnext, gm.level
         FROM guildmember gm
-        JOIN member m ON m.id = gm.memberid
-        JOIN guild g ON g.id = gm.guildid
-        WHERE m.id = $1 AND gm.guildid = $2;
+        WHERE gm.memberid = $1 AND gm.guildid = $2;
       )",
       static_cast<uint64_t>(member_id),
       static_cast<uint64_t>(guild_id)
