@@ -73,8 +73,6 @@ bool Kitty::Services::DB::guild_enrolled(std::shared_ptr<Services::SharedService
     {
       return true;
     }
-
-    trans.commit();
   }
   catch (const std::exception& e)
   {

@@ -3,10 +3,13 @@
 #include "Commands/kitty.h"
 #include "Commands/manager.h"
 #include "Commands/ping.h"
+#include "Models/user.h"
+#include "Services/db.h"
 #include "Services/db_init.h"
 #include "Services/shared_services.h"
 #include "parse_env.h"
 
+#include <cmath>
 #include <csignal>
 #include <cstdlib>
 #include <exception>
@@ -21,6 +24,9 @@
 
 namespace {
   static constexpr bool delete_defaults = true;
+
+  static constexpr float level_increase = 0.15f;
+  static constexpr int level_gap = 2;
 
   // Global handler :/
   static std::function<void()> signal_handle;
@@ -44,6 +50,56 @@ namespace {
     manager.enroll<Kitty::Commands::Administrative::Enroll>();
     // -- Coin commands
     manager.enroll<Kitty::Commands::Administrative::AddCoins>();
+  }
+
+  static void on_message(const dpp::message_create_t& event, dpp::cluster* client, std::shared_ptr<Kitty::Services::SharedServices> services)
+  {
+    // Bot safe guard
+    if (event.msg.author.is_bot()) return;
+
+    // Check DB
+    if (!Kitty::Services::DB::guild_enrolled(services, event.msg.guild_id)) return;
+
+    // If the server is in the database, create or fetch the message owner.
+    Kitty::Models::KUser user = Kitty::Services::DB::ensure_user(services, event.msg.author.id, event.msg.guild_id);
+    user.xp += user.xpstep;
+
+    // Handle level ups
+    if (user.xp >= user.xpnext)
+    {
+      while (user.xp > user.xpnext)
+      {
+        user.xp -= user.xpnext;
+        
+        user.level += 1;
+        if (user.level % 5 == 0) user.xpstep += 5;
+
+        user.xpnext = static_cast<int>(std::floor(std::pow((user.level / level_increase), level_gap)));
+      }
+
+      event.reply(std::format("Congrats, {}! You've reached level {}!", event.msg.author.get_mention(), user.level));
+    }
+
+    // Update user data
+    try
+    {
+      pqxx::work trans(*services->client);
+      trans.exec_params(R"(
+          UPDATE guildmember SET xp = $1, xpstep = $2, xpnext = $3, level = $4, coins = $5
+          WHERE memberid = $6 AND guildid = $7;
+        )",
+        user.xp, user.xpstep, user.xpnext, user.level, user.coins,
+        static_cast<uint64_t>(event.msg.author.id),
+        static_cast<uint64_t>(event.msg.guild_id)
+      );
+ 
+      trans.commit();
+    }
+    catch (const std::exception& e)
+    {
+      client->log(dpp::loglevel::ll_error, std::format("Failed to update user message data: {}", e.what()));
+      return;
+    }
   }
 }
 
@@ -83,7 +139,7 @@ int main()
   std::cout << "INFO: Created default tables." << std::endl;
 
   // Create client cluster
-  dpp::cluster client(token);
+  dpp::cluster client(token, dpp::intents::i_default_intents | dpp::intents::i_message_content);
 
   // Register the signal handler.
   signal_handle = [&client, &services]() {
@@ -98,6 +154,11 @@ int main()
 
   // Create logging service
   client.on_log(dpp::utility::cout_logger());
+
+  // On message
+  client.on_message_create([&client, &services](const dpp::message_create_t& event) {
+    on_message(event, &client, services);
+  });
 
   // Create command manager.
   Kitty::Commands::CommandManager manager(&client, services);

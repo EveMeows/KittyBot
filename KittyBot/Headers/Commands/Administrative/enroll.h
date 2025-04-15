@@ -43,7 +43,7 @@ namespace Kitty::Commands::Administrative
       }
 
       // Insert the guild into the database.
-      insert.exec_params("INSERT INTO guild (id) VALUES ($1);", static_cast<int64_t>(event.command.guild_id));
+      insert.exec_params("INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING;", static_cast<int64_t>(event.command.guild_id));
 
       insert.commit();
     }
