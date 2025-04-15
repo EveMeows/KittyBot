@@ -1,3 +1,4 @@
+#include "Commands/Administrative/add_coins.h"
 #include "Commands/Administrative/enroll.h"
 #include "Commands/kitty.h"
 #include "Commands/manager.h"
@@ -41,6 +42,8 @@ namespace {
 
     // Administrator
     manager.enroll<Kitty::Commands::Administrative::Enroll>();
+    // -- Coin commands
+    manager.enroll<Kitty::Commands::Administrative::AddCoins>();
   }
 }
 

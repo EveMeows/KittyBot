@@ -92,7 +92,9 @@ endif()
 add_executable(${PROJECT_NAME}
     KittyBot/Sources/main.cpp
     KittyBot/Sources/Services/nekosia.cpp
+    
     KittyBot/Sources/Services/db_init.cpp
+    KittyBot/Sources/Services/db.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
