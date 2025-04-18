@@ -14,14 +14,17 @@ Kitty::Models::KUser Kitty::Services::DB::ensure_user(std::shared_ptr<Services::
   {
     pqxx::work trans(*services->client);
 
-    pqxx::result res = trans.exec_params(R"(
+    pqxx::result res = trans.exec(R"(
         SELECT
           gm.memberid, gm.coins, gm.xp, gm.xpstep, gm.xpnext, gm.level
         FROM guildmember gm
         WHERE gm.memberid = $1 AND gm.guildid = $2;
       )",
-      static_cast<uint64_t>(member_id),
-      static_cast<uint64_t>(guild_id)
+        
+      pqxx::params {
+        static_cast<uint64_t>(member_id),
+        static_cast<uint64_t>(guild_id)
+      }
     );
     
     if (!res.empty())
@@ -40,8 +43,8 @@ Kitty::Models::KUser Kitty::Services::DB::ensure_user(std::shared_ptr<Services::
     }
 
     // The user does not exist so we add it to the database.
-    trans.exec_params("INSERT INTO member (id) VALUES ($1) ON CONFLICT DO NOTHING;", static_cast<uint64_t>(member_id));
-    trans.exec_params("INSERT INTO guildmember (memberid, guildid) VALUES ($1, $2) ON CONFLICT DO NOTHING;", static_cast<uint64_t>(member_id), static_cast<uint64_t>(guild_id));
+    trans.exec("INSERT INTO member (id) VALUES ($1) ON CONFLICT DO NOTHING;", pqxx::params { static_cast<uint64_t>(member_id) });
+    trans.exec("INSERT INTO guildmember (memberid, guildid) VALUES ($1, $2) ON CONFLICT DO NOTHING;", pqxx::params { static_cast<uint64_t>(member_id), static_cast<uint64_t>(guild_id) });
 
     user.level = 1;
     user.coins = 0;
@@ -68,7 +71,7 @@ bool Kitty::Services::DB::guild_enrolled(std::shared_ptr<Services::SharedService
   {
     pqxx::work trans(*services->client);
 
-    pqxx::result res = trans.exec_params("SELECT id FROM guild WHERE id = $1;", static_cast<uint64_t>(guild_id));
+    pqxx::result res = trans.exec("SELECT id FROM guild WHERE id = $1;", pqxx::params { static_cast<uint64_t>(guild_id) });
     if (!res.empty())
     {
       return true;

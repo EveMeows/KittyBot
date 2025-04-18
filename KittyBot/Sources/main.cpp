@@ -1,5 +1,6 @@
 #include "Commands/Administrative/add_coins.h"
 #include "Commands/Administrative/enroll.h"
+#include "Commands/Gambling/Roulette.h"
 #include "Commands/kitty.h"
 #include "Commands/manager.h"
 #include "Commands/ping.h"
@@ -50,6 +51,9 @@ namespace {
     manager.enroll<Kitty::Commands::Administrative::Enroll>();
     // -- Coin commands
     manager.enroll<Kitty::Commands::Administrative::AddCoins>();
+
+    // Gambling
+    manager.enroll<Kitty::Commands::Gambling::Roulette>();
   }
 
   static void on_message(const dpp::message_create_t& event, dpp::cluster* client, std::shared_ptr<Kitty::Services::SharedServices> services)
@@ -84,13 +88,15 @@ namespace {
     try
     {
       pqxx::work trans(*services->client);
-      trans.exec_params(R"(
+      trans.exec(R"(
           UPDATE guildmember SET xp = $1, xpstep = $2, xpnext = $3, level = $4, coins = $5
           WHERE memberid = $6 AND guildid = $7;
         )",
-        user.xp, user.xpstep, user.xpnext, user.level, user.coins,
-        static_cast<uint64_t>(event.msg.author.id),
-        static_cast<uint64_t>(event.msg.guild_id)
+        pqxx::params {
+          user.xp, user.xpstep, user.xpnext, user.level, user.coins,
+          static_cast<uint64_t>(event.msg.author.id),
+          static_cast<uint64_t>(event.msg.guild_id)
+        }
       );
  
       trans.commit();

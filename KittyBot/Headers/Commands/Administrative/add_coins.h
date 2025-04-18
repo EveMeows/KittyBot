@@ -68,13 +68,15 @@ namespace Kitty::Commands::Administrative
       try
       {
         pqxx::work trans(*this->m_services->client);
-        trans.exec_params(R"(
+        trans.exec(R"(
             UPDATE guildmember SET coins = $1
             WHERE memberid = $2 AND guildid = $3;
           )",
-          db_user.coins,
-          static_cast<uint64_t>(user.id),
-          static_cast<uint64_t>(event.command.guild_id)
+          pqxx::params {
+            db_user.coins,
+            static_cast<uint64_t>(user.id),
+            static_cast<uint64_t>(event.command.guild_id)
+          }
         );
 
         trans.commit();

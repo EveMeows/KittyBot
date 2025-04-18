@@ -35,7 +35,7 @@ namespace Kitty::Commands::Administrative
       pqxx::work insert(*this->m_shared->client);
 
       // Check if the guild is already in the database
-      auto result = insert.exec_params("SELECT id FROM guild WHERE id = $1;", static_cast<int64_t>(event.command.guild_id));
+      auto result = insert.exec("SELECT id FROM guild WHERE id = $1;", pqxx::params { static_cast<int64_t>(event.command.guild_id) });
       if (!result.empty())
       {
         event.reply("Your server is already enrolled into my database!");
@@ -43,7 +43,7 @@ namespace Kitty::Commands::Administrative
       }
 
       // Insert the guild into the database.
-      insert.exec_params("INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING;", static_cast<int64_t>(event.command.guild_id));
+      insert.exec("INSERT INTO guild (id) VALUES ($1) ON CONFLICT DO NOTHING;", pqxx::params { static_cast<int64_t>(event.command.guild_id) });
 
       insert.commit();
     }
