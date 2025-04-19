@@ -22,6 +22,7 @@
 #include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
 #include <dpp/misc-enum.h>
+#include <iostream>
 #include <memory>
 
 namespace {
@@ -111,24 +112,40 @@ namespace {
       return;
     }
   }
+
+  inline std::string require_env(const char* key) {
+    const char* value = std::getenv(key);
+    if (!value) {
+      std::cerr << "ERROR: Variable " << key << " is not set. Aborting." << std::endl;
+      exit(1);
+    }
+    
+    return value;
+  }
 }
 
 int main()
 {
   // Parse the provided .env
   Kitty::parse_env();
-  std::string token = getenv("KITTY_TOKEN");
+  std::string token = require_env("KITTY_TOKEN");
 
   // Create shared service data
   std::shared_ptr<Kitty::Services::SharedServices> services =
     std::make_shared<Kitty::Services::SharedServices>();
+
+  std::string host = require_env("HOST");
+  std::string port = require_env("PORT");
+  std::string db   = require_env("DB");
+  std::string user = require_env("USER");
+  std::string pwd  = require_env("PWD");
 
   // Attempt database connection.
   try
   {
     services->client = std::make_unique<pqxx::connection>(std::format(
       "host={} port={} dbname={} user={} password={}",
-      std::getenv("HOST"), std::getenv("PORT"), std::getenv("DB"), std::getenv("USER"), std::getenv("PWD")
+      host, port, db, user, pwd
     ));
 
     std::cout << "INFO: Successfully established connection to " << services->client->dbname() << " as " << services->client->username() << "!" << std::endl;
