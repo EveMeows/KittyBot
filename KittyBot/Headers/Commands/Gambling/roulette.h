@@ -76,7 +76,7 @@ namespace Kitty::Commands::Gambling
           std::uniform_int_distribution<int> distr(0, 1);
           bool red = distr(rng);
 
-          std::this_thread::sleep_for(3s);
+          std::this_thread::sleep_for(2s);
 
           // Thread guard.
           std::unique_lock lock {this->m_wager_guard, std::try_to_lock};
