@@ -1,5 +1,6 @@
 #include "Commands/Administrative/add_coins.h"
 #include "Commands/Administrative/enroll.h"
+#include "Commands/Administrative/remove_coins.h"
 #include "Commands/Gambling/roulette.h"
 #include "Commands/kitty.h"
 #include "Commands/manager.h"
@@ -51,6 +52,9 @@ namespace {
     manager.enroll<Kitty::Commands::Administrative::Enroll>();
     // -- Coin commands
     manager.enroll<Kitty::Commands::Administrative::AddCoins>();
+    manager.enroll<Kitty::Commands::Administrative::RemoveCoins>();
+    // -- XP commands
+    // TODO
 
     // Gambling
     manager.enroll<Kitty::Commands::Gambling::Roulette>();
