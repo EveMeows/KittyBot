@@ -7,6 +7,8 @@
 #include <dpp/appcommand.h>
 #include <dpp/cluster.h>
 #include <dpp/dispatcher.h>
+#include <dpp/message.h>
+#include <dpp/colors.h>
 #include <dpp/snowflake.h>
 #include <dpp/user.h>
 #include <exception>
@@ -89,7 +91,12 @@ namespace Kitty::Commands::Administrative
         return;
       }
 
-      event.reply(std::format("u: {}\nc: {}", user.username, db_user.coins));
+      dpp::embed embed = dpp::embed()
+        .set_title("Coins transaction results!")
+        .set_description(std::format("Successfully transferred {} coins to {}'s bank account!", *coins, user.get_mention()))
+        .set_colour(dpp::colours::yellow);
+      
+      event.reply(embed); 
     }
   private:
     dpp::cluster* m_client;
