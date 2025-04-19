@@ -1,6 +1,6 @@
 #include "Commands/Administrative/add_coins.h"
 #include "Commands/Administrative/enroll.h"
-#include "Commands/Gambling/Roulette.h"
+#include "Commands/Gambling/roulette.h"
 #include "Commands/kitty.h"
 #include "Commands/manager.h"
 #include "Commands/ping.h"
@@ -24,7 +24,7 @@
 #include <memory>
 
 namespace {
-  static constexpr bool delete_defaults = true;
+  static constexpr bool delete_defaults = false;
 
   static constexpr float level_increase = 0.15f;
   static constexpr int level_gap = 2;
