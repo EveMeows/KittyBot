@@ -2,6 +2,7 @@
 #include "Commands/Administrative/enroll.h"
 #include "Commands/Administrative/remove_coins.h"
 #include "Commands/Gambling/roulette.h"
+#include "Commands/User/uinfo.h"
 #include "Commands/kitty.h"
 #include "Commands/manager.h"
 #include "Commands/ping.h"
@@ -48,6 +49,9 @@ namespace {
     // Misc
     manager.enroll<Kitty::Commands::Ping>();
     manager.enroll<Kitty::Commands::Kitty>();
+
+    // User
+    manager.enroll<Kitty::Commands::User::UserInfo>();
 
     // Administrator
     manager.enroll<Kitty::Commands::Administrative::Enroll>();
