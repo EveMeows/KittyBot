@@ -4,14 +4,14 @@
 #include "Models/user.h"
 #include "Services/db.h"
 #include "Services/shared_services.h"
-#include "appcommand.h"
-#include "cluster.h"
-#include "message.h"
-#include "snowflake.h"
+#include "dpp/cluster.h"
+#include "dpp/message.h"
+#include "dpp/snowflake.h"
 #include <cstdint>
 #include <format>
 #include <memory>
 #include <vector>
+
 namespace Kitty::Commands::User
 {
   class UserInfo : public SlashCommand
