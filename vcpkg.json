@@ -1,0 +1,7 @@
+{
+  "dependencies": [
+    "cpr",
+    "libpq",
+    "libpqxx"
+  ]
+}

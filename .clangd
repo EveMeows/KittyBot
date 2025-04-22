@@ -1,4 +1,4 @@
 CompileFlags:
-	Add: [-Wall]
-    CompilationDatabase: build
-    Compiler: clang++
+  Add: [-Wall]
+  CompilationDatabase: build
+  Compiler: clang++
