@@ -35,10 +35,11 @@ KittyBot
 └── ...
 ```
 
-## Setup
+## Building
 KittyBot OS specific setup!
 Though some setup is agnostic, as there's partial support for VCPKG.
 
+### Prerequisities
 > [!IMPORTANT]
 > You can install vcpkg [here](https://learn.microsoft.com/ro-ro/vcpkg/get_started/get-started?pivots=shell-powershell)!
 
@@ -56,13 +57,13 @@ Though, the bot still relies on some packages. We will need to install PostgreSQ
 On linux, we use G++ or Clang++ for compilation. Below you'll see instructions for installation.
 ```bash
 # Fedora
-sudo dnf in postgresql-server postgresql-contrib clang gcc-g++ ninja cmake
+sudo dnf in postgresql-server postgresql-contrib clang gcc gcc-g++ ninja cmake
 
 # Ubuntu/Debian
-sudo apt install postgresql-server clang g++ ninja-build cmake
+sudo apt install postgresql clang gcc g++ ninja-build cmake
 
 # Arch
-sudo pacman -S postgresql clang g++ ninja cmake
+sudo pacman -S postgresql clang gcc ninja cmake
 ```
 
 Each distro will have it's own way to setup PostgreSQL, for example, here's [fedora's](https://docs.fedoraproject.org/en-US/quick-docs/postgresql/).
@@ -74,6 +75,7 @@ nano .env
 
 mkdir build; cd build
 
+# While compiling vcpkg dependencies, you will probably need to install more dependencies..
 cmake .. -G Ninja -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
 
 ninja

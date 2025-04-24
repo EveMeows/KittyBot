@@ -32,7 +32,6 @@ namespace {
   static constexpr float level_increase = 0.15f;
   static constexpr int level_gap = 2;
 
-  // Global handler :/
   static std::function<void()> signal_handle;
   static void exit_handler(int signal)
   {
@@ -63,6 +62,10 @@ namespace {
 
     // Gambling
     manager.enroll<Kitty::Commands::Gambling::Roulette>();
+    // TODO: Dice rolls, and maybe slots?
+
+    // Economy
+    // TODO: Dailies and other bs
   }
 
   static void on_message(const dpp::message_create_t& event, dpp::cluster* client, std::shared_ptr<Kitty::Services::SharedServices> services)
