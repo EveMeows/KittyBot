@@ -10,6 +10,7 @@
 #include "dpp/colors.h"
 #include "dpp/dispatcher.h"
 #include "dpp/message.h"
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>
@@ -102,10 +103,10 @@ namespace Kitty::Commands::Gambling
           }
           else
           {
-            user.coins += wager * 2;
+            user.coins += wager * 3;
           }
 
-          std::string msg = won ? "You did it! Your wager has been doubled and added to your bank." : "Your guess was wrong... Better luck next time!";
+          std::string msg = won ? "You did it! Your wager has been *tripled* and added to your bank." : "Your guess was wrong... Better luck next time!";
           event.edit_original_response(
             dpp::message(
               std::format(
@@ -114,34 +115,73 @@ namespace Kitty::Commands::Gambling
               )
             )
           );
-          
-          try
-          {
-            pqxx::work trans(*this->m_services->client);
 
-            trans.exec(R"(
-                UPDATE guildmember SET coins = $1
-                WHERE memberid = $2 AND guildid = $3;
-              )",
-              pqxx::params {
-                user.coins,
-                static_cast<uint64_t>(user_id), static_cast<uint64_t>(event.command.guild_id)
-              }
-            );
-  
-            trans.commit();
-          }
-          catch (const std::exception& e)
-          {
-            this->m_client->log(dpp::loglevel::ll_error, std::format("Could not update user {}", e.what()));
-            return;
-          }
+          update_user(user, static_cast<uint64_t>(user_id), static_cast<uint64_t>(event.command.guild_id));          
         }).detach();
       }
       else if (subcmd.name == "evenodd")
       {
         if (this->is_empty(subcmd.options, event)) return;
-        // TODO
+        
+        long int wager = subcmd.get_value<long int>(0);
+        if (wager < 1 || wager > user.coins)
+        {
+          event.reply("You cannot bet that amount!");
+          return;
+        }
+        std::string type = subcmd.get_value<std::string>(1);
+        
+        event.reply(std::format("Wager: {}\nBet: Even/Odd Roll\nType: {}\nTotal Coins: {}\n\n:game_die: Rolling the die... Please hang on!", wager, type, user.coins));
+
+        std::thread([type, user, wager, this, user_id, event]() mutable { 
+          std::random_device rand;
+          std::mt19937 rng(rand());
+          std::uniform_int_distribution<int> distr(0, 6);
+        
+          int side = distr(rng);
+          bool even = side % 2 == 0;
+
+          using namespace std::chrono_literals;
+          std::this_thread::sleep_for(2s);
+
+          bool even_won = true;
+          if (even)
+          {
+            if (type == "even")
+            {
+              user.coins += wager * 2;
+            }
+            else
+            {
+              even_won = false;
+              user.coins -= wager;
+            }
+          }
+          else
+          {
+            if (type == "even")
+            {
+              even_won = false;
+              user.coins -= wager;
+            }
+            else
+            {
+              user.coins += wager * 2;
+            }
+          }
+          
+          std::string msg = even_won ? "You did it! Your wager has been doubled and added to your bank." : "Your guess was wrong... Better luck next time!";
+          event.edit_original_response(
+            dpp::message(
+              std::format(
+                "Wager: {}\nBet: Even/Odd Roll\nType: {}\nTotal Coins: {}\n\n:game_die: The die shows {}\n{}",
+                wager, type, user.coins, even ? "Even" : "Odd", msg
+              )
+            )
+          );
+
+          this->update_user(user, static_cast<uint64_t>(user_id), static_cast<uint64_t>(event.command.guild_id));
+        }).detach();
       }
       else if (subcmd.name == "range")
       {
@@ -165,6 +205,31 @@ namespace Kitty::Commands::Gambling
       }
       
       return false;
+    }
+
+    void update_user(Models::KUser user, uint64_t user_id, uint64_t guild_id)
+    {
+      try
+      {
+        pqxx::work trans(*this->m_services->client);
+
+        trans.exec(R"(
+            UPDATE guildmember SET coins = $1
+            WHERE memberid = $2 AND guildid = $3;
+          )",
+          pqxx::params {
+            user.coins,
+            user_id, guild_id
+          }
+        );
+
+        trans.commit();
+      }
+      catch (const std::exception& e)
+      {
+        this->m_client->log(dpp::loglevel::ll_error, std::format("Could not update user {}", e.what()));
+        return;
+      }
     }
     
     dpp::cluster* m_client;

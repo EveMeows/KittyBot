@@ -90,7 +90,7 @@ namespace Kitty::Commands::Gambling
           {
             if (red)
             {
-              user.coins += wager;
+              user.coins += wager * 2;
               event.edit_original_response(dpp::message(
                 std::format(
                   "Wager: {}\nBet: Red\nTotal Coins: {}\n\n🎰 The ball landed on :red_square:! You doubled your wager!",
@@ -113,7 +113,7 @@ namespace Kitty::Commands::Gambling
           {
             if (!red)
             {
-              user.coins += wager;
+              user.coins += wager * 2;
               event.edit_original_response(dpp::message(
                 std::format(
                   "Wager: {}\nBet: Black\nTotal Coins: {}\n\n🎰 The ball landed on :black_medium_square:! You doubled your wager!",
