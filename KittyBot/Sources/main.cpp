@@ -6,6 +6,7 @@
 #include "Commands/kitty.h"
 #include "Commands/manager.h"
 #include "Commands/ping.h"
+#include "Commands/Gambling/dice.h"
 #include "Models/user.h"
 #include "Services/db.h"
 #include "Services/db_init.h"
@@ -62,8 +63,8 @@ namespace {
 
     // Gambling
     manager.enroll<Kitty::Commands::Gambling::Roulette>();
-    // TODO: Dice rolls, and maybe slots?
-
+    manager.enroll<Kitty::Commands::Gambling::Dice>();
+    
     // Economy
     // TODO: Dailies and other bs
   }
