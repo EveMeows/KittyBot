@@ -30,7 +30,6 @@ void Kitty::Commands::Administrative::AddCoins::execute(const dpp::slashcommand_
   std::optional<dpp::snowflake> id = this->param<dpp::snowflake>("user", event);
   if (id) user = event.command.get_resolved_user(*id);
 
-  
   if (*coins <= 0 || user.is_bot())
   {
     event.reply("You can't do that!");

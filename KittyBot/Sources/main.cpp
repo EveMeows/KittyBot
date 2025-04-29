@@ -84,7 +84,7 @@ namespace {
     // Handle level ups
     if (user.xp >= user.xpnext)
     {
-      while (user.xp > user.xpnext)
+      while (user.xp >= user.xpnext)
       {
         user.xp -= user.xpnext;
         
