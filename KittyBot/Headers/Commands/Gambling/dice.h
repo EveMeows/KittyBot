@@ -4,12 +4,14 @@
 #include "Models/user.h"
 #include "Services/db.h"
 #include "Services/shared_services.h"
+#include "cluster.h"
 #include "dpp/appcommand.h"
 #include "dpp/appcommand.h"
 #include "dpp/colors.h"
 #include "dpp/dispatcher.h"
 #include "dpp/message.h"
 #include <memory>
+#include <random>
 #include <vector>
 namespace Kitty::Commands::Gambling
 {
@@ -62,12 +64,79 @@ namespace Kitty::Commands::Gambling
       dpp::snowflake user_id = event.command.get_issuing_user().id;
       Models::KUser user = Services::DB::ensure_user(this->m_services, user_id, event.command.guild_id);
 
-      std::cout << user.coins << std::endl;
-
       if (subcmd.name == "exact")
       {
         if (this->is_empty(subcmd.options, event)) return;
-        // TODO
+
+        long int wager = subcmd.get_value<long int>(0);
+        if (wager < 1 || wager > user.coins)
+        {
+          event.reply("You cannot bet that amount!");
+          return;
+        }
+        
+        long int number = subcmd.get_value<long int>(1);
+        if (number < 1 || number > 6)
+        {
+          event.reply("You cannot bet that number... The die only has 6 sides.");
+          return;
+        }
+        
+        event.reply(std::format("Wager: {}\nBet: Exact Roll\nNumber: {}\nTotal Coins: {}\n\n:game_die: Rolling the die... Please hang on!", wager, number, user.coins));
+
+        std::thread([event, wager, user, number, this, user_id]() mutable {
+          std::random_device rand;
+          std::mt19937 rng(rand());
+          std::uniform_int_distribution<int> distr(0, 6);
+          
+          int side = distr(rng);
+
+          using namespace std::chrono_literals;
+          std::this_thread::sleep_for(2s);
+
+          bool won = true;
+          if (number != side)
+          {
+            won = false;
+            user.coins -= wager;
+          }
+          else
+          {
+            user.coins += wager * 2;
+          }
+
+          std::string msg = won ? "You did it! Your wager has been doubled and added to your bank." : "Your guess was wrong... Better luck next time!";
+          event.edit_original_response(
+            dpp::message(
+              std::format(
+                "Wager: {}\nBet: Exact Roll\nNumber: {}\nTotal Coins: {}\n\n:game_die: Die landed on {}!\n{}",
+                wager, number, user.coins, side, msg
+              )
+            )
+          );
+          
+          try
+          {
+            pqxx::work trans(*this->m_services->client);
+
+            trans.exec(R"(
+                UPDATE guildmember SET coins = $1
+                WHERE memberid = $2 AND guildid = $3;
+              )",
+              pqxx::params {
+                user.coins,
+                static_cast<uint64_t>(user_id), static_cast<uint64_t>(event.command.guild_id)
+              }
+            );
+  
+            trans.commit();
+          }
+          catch (const std::exception& e)
+          {
+            this->m_client->log(dpp::loglevel::ll_error, std::format("Could not update user {}", e.what()));
+            return;
+          }
+        }).detach();
       }
       else if (subcmd.name == "evenodd")
       {
