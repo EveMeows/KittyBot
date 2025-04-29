@@ -9,8 +9,6 @@
 #include <dpp/event.h>
 #include <dpp/misc-enum.h>
 
-#include <optional>
-
 namespace Kitty::Commands
 {
   class Ping : public SlashCommand
@@ -24,26 +22,7 @@ namespace Kitty::Commands
       this->m_client = client;
     };
 
-    std::vector<dpp::command_option> options() const override
-    {
-      return {dpp::command_option(dpp::co_boolean, "ping", "Show bot ping.",
-                                  false)};
-    }
-
-    void execute(const dpp::slashcommand_t &event) override
-    {
-      std::string res = "Pong! I am made in C++.";
-      if (std::optional<bool> ping = this->param<bool>("ping", event))
-      {
-        if (*ping)
-        {
-          res = std::format(
-              "Pong! I am made in C++.\nMy ping is approx. {:.3f}ms!",
-              this->m_client->rest_ping);
-        }
-      }
-
-      event.reply(res);
-    }
+    std::vector<dpp::command_option> options() const override;
+    void execute(const dpp::slashcommand_t &event) override;
   };
 } // namespace Kitty::Commands

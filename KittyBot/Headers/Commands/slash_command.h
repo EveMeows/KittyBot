@@ -12,8 +12,7 @@ namespace Kitty::Commands
   {
   public:
     const std::string name, description;
-    SlashCommand(const std::string name, const std::string description)
-        : name(name), description(description) {};
+    SlashCommand(const std::string name, const std::string description) : name(name), description(description) {};
 
     // ???
     virtual ~SlashCommand() = default;
@@ -38,27 +37,8 @@ namespace Kitty::Commands
     }
 
     virtual void execute(const dpp::slashcommand_t &event) = 0;
-    virtual std::vector<dpp::command_option> options() const
-    {
-      return {};
-    }
-
-    virtual dpp::slashcommand get_dpp_command(dpp::snowflake bot_id) const
-    {
-      dpp::slashcommand cmd(this->name, this->description, bot_id);
-
-      if (this->m_permissions != 0)
-      {
-        cmd.set_default_permissions(this->m_permissions);
-      }
-      
-      for (const dpp::command_option &opt : this->options())
-      {
-        cmd.add_option(opt);
-      }
-
-      return cmd;
-    }
+    virtual std::vector<dpp::command_option> options() const;
+    virtual dpp::slashcommand get_dpp_command(dpp::snowflake bot_id) const;
   protected:
     /**
     * @brief The required permissions for the command, by default everyone is allowed.

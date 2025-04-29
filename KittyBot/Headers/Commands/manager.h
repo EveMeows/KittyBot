@@ -18,7 +18,8 @@ namespace Kitty::Commands
   class CommandManager
   {
   public:
-    CommandManager(dpp::cluster *client, std::shared_ptr<Services::SharedServices> services) : m_client(client), m_services(services) {};
+    CommandManager(dpp::cluster *client, std::shared_ptr<Services::SharedServices> services)
+      : m_services(services), m_client(client) {};
 
     template <typename TCommand, typename... TArgs>
     void enroll(TArgs &&...args)
@@ -36,44 +37,10 @@ namespace Kitty::Commands
     }
 
     /// @brief Create all the slash commands stored in the manager.
-    void create_all()
-    {
-      // for (const std::unique_ptr<SlashCommand> &command : this->m_commands)
-      // {
-      //   this->m_client->global_command_create(
-      //     command->get_dpp_command(this->m_client->me.id)
-      //   );
-
-      //   this->m_client->log(
-      //     dpp::loglevel::ll_info,
-      //     std::format("Created command {}.", command->name)
-      //   );
-      // }
-      //
-
-      // Bulk create to save API calls.
-      std::vector<dpp::slashcommand> commands;
-      dpp::snowflake id = this->m_client->me.id;
-      for (const std::unique_ptr<SlashCommand> &command : this->m_commands)
-      {
-        commands.push_back(command->get_dpp_command(id));
-      }
-
-      this->m_client->global_bulk_command_create(commands);
-    }
-
+    void create_all();
+    
     /// @brief Handle slash commands when a command is executed.
-    void handle(const dpp::slashcommand_t &event)
-    {
-      for (std::unique_ptr<SlashCommand> &command : this->m_commands)
-      {
-        if (event.command.get_command_name() == command->name)
-        {
-          command->execute(event);
-          return;
-        }
-      }
-    }
+    void handle(const dpp::slashcommand_t &event);
   private:
     std::vector<std::unique_ptr<SlashCommand>> m_commands;
     std::shared_ptr<Services::SharedServices> m_services;

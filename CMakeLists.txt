@@ -42,10 +42,28 @@ find_package(libpqxx CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME}
     KittyBot/Sources/main.cpp
+
+    # Services
     KittyBot/Sources/Services/nekosia.cpp
 
     KittyBot/Sources/Services/db_init.cpp
     KittyBot/Sources/Services/db.cpp
+
+    # Commands
+    KittyBot/Sources/Commands/manager.cpp
+    KittyBot/Sources/Commands/slash_command.cpp
+
+    KittyBot/Sources/Commands/Gambling/dice.cpp
+    KittyBot/Sources/Commands/Gambling/roulette.cpp
+
+    KittyBot/Sources/Commands/User/uinfo.cpp
+
+    KittyBot/Sources/Commands/Administrative/enroll.cpp
+    KittyBot/Sources/Commands/Administrative/add_coins.cpp
+    KittyBot/Sources/Commands/Administrative/remove_coins.cpp
+
+    KittyBot/Sources/Commands/ping.cpp
+    KittyBot/Sources/Commands/kitty.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
