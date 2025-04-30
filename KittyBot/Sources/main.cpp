@@ -63,6 +63,7 @@ namespace {
     // Gambling
     manager.enroll<Kitty::Commands::Gambling::Roulette>();
     manager.enroll<Kitty::Commands::Gambling::Dice>();
+    // TODO: Slots
     
     // Economy
     // TODO: Dailies and other bs
