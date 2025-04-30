@@ -38,7 +38,7 @@ void Kitty::Commands::User::UserInfo::execute(const dpp::slashcommand_t& event)
 
   dpp::user issuing = event.command.get_issuing_user();
   
-  int p = std::floor((kuser.xp / kuser.xpnext)  * 100);
+  int p = std::floor((static_cast<double>(kuser.xp) / kuser.xpnext) * 100);
   std::string stats = std::format(
     "Data statistics for {}.\n{} Coins\nLevel: {}\nXP: {}/{} ({}%)",
     user.get_mention(), kuser.coins,
