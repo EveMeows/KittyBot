@@ -21,15 +21,7 @@ std::vector<dpp::command_option> Kitty::Commands::Gambling::Dice::options() cons
         dpp::command_option(dpp::command_option_type::co_string, "type", "Even or Odd", true)
           .add_choice(dpp::command_option_choice("Even", std::string("even")))
           .add_choice(dpp::command_option_choice("Odd", std::string("odd")))
-      ),
-                
-    dpp::command_option(dpp::command_option_type::co_sub_command, "range", "Gamble on the range of number returned! Reward is 1:2")
-      .add_option(dpp::command_option(dpp::command_option_type::co_integer, "wager", "The amount of coins to bet", true))
-      .add_option(
-        dpp::command_option(dpp::command_option_type::co_string, "range", "Choose a range", true)
-          .add_choice(dpp::command_option_choice("1-3", std::string("13")))
-          .add_choice(dpp::command_option_choice("4-6", std::string("46")))
-      ),
+      ),                
   };
 }
 
@@ -45,7 +37,6 @@ void Kitty::Commands::Gambling::Dice::execute(const dpp::slashcommand_t& event)
   dpp::command_data_option subcmd = cmd.options[0];
 
   dpp::snowflake user_id = event.command.get_issuing_user().id;
-#include <random>
   Models::KUser user = Services::DB::ensure_user(this->m_services, user_id, event.command.guild_id);
 
   if (subcmd.name == "exact")
@@ -165,11 +156,6 @@ void Kitty::Commands::Gambling::Dice::execute(const dpp::slashcommand_t& event)
 
       this->update_user(user, static_cast<uint64_t>(user_id), static_cast<uint64_t>(event.command.guild_id));
     }).detach();
-  }
-  else if (subcmd.name == "range")
-  {
-    if (this->is_empty(subcmd.options, event)) return;
-    // TODO 
   }
 }
 

@@ -16,6 +16,7 @@
 #include <cmath>
 #include <csignal>
 #include <cstdlib>
+#include <ctime>
 #include <exception>
 #include <format>
 #include <functional>
@@ -26,6 +27,7 @@
 #include <dpp/misc-enum.h>
 #include <iostream>
 #include <memory>
+#include <unordered_map>
 
 namespace {
   static constexpr bool delete_defaults = false;
@@ -38,8 +40,7 @@ namespace {
   {
     if (signal == SIGINT)
     {
-      if (signal_handle)
-        signal_handle();
+      if (signal_handle) signal_handle();
       exit(0);
     }
   }
@@ -69,6 +70,7 @@ namespace {
     // TODO: Dailies and other bs
   }
 
+  static std::unordered_map<uint64_t, std::time_t> user_cooldowns;
   static void on_message(const dpp::message_create_t& event, dpp::cluster* client, std::shared_ptr<Kitty::Services::SharedServices> services)
   {
     // Bot safe guard
@@ -76,6 +78,24 @@ namespace {
 
     // Check DB
     if (!Kitty::Services::DB::guild_enrolled(services, event.msg.guild_id)) return;
+
+    // Check if the user is in cooldown. (2s)
+    uint64_t uid = event.msg.author.id;
+    if (user_cooldowns.find(uid) != user_cooldowns.end())
+    {
+      // Found user in cooldown map
+      std::time_t current = std::time(nullptr);
+      std::time_t cooldown = user_cooldowns[uid];
+
+      if (std::difftime(current, cooldown) <= 2) return;
+      else user_cooldowns[uid] = current;
+    }
+    else
+    {
+      // User not found in cooldown map, add then proceed
+      std::time_t current = std::time(nullptr);
+      user_cooldowns[uid] = current;
+    }
 
     // If the server is in the database, create or fetch the message owner.
     Kitty::Models::KUser user = Kitty::Services::DB::ensure_user(services, event.msg.author.id, event.msg.guild_id);
