@@ -61,6 +61,7 @@ add_executable(${PROJECT_NAME}
     KittyBot/Sources/Commands/Administrative/enroll.cpp
     KittyBot/Sources/Commands/Administrative/add_coins.cpp
     KittyBot/Sources/Commands/Administrative/remove_coins.cpp
+    KittyBot/Sources/Commands/Administrative/add_xp.cpp
 
     KittyBot/Sources/Commands/ping.cpp
     KittyBot/Sources/Commands/kitty.cpp

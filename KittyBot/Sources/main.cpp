@@ -1,4 +1,5 @@
 #include "Commands/Administrative/add_coins.h"
+#include "Commands/Administrative/add_xp.h"
 #include "Commands/Administrative/enroll.h"
 #include "Commands/Administrative/remove_coins.h"
 #include "Commands/Gambling/roulette.h"
@@ -32,9 +33,6 @@
 namespace {
   static constexpr bool delete_defaults = false;
 
-  static constexpr float level_increase = 0.15f;
-  static constexpr int level_gap = 2;
-
   static std::function<void()> signal_handle;
   static void exit_handler(int signal)
   {
@@ -60,8 +58,8 @@ namespace {
     manager.enroll<Kitty::Commands::Administrative::AddCoins>();
     manager.enroll<Kitty::Commands::Administrative::RemoveCoins>();
     // -- XP commands
-    // TODO
-
+    manager.enroll<Kitty::Commands::Administrative::AddXP>();
+    
     // Gambling
     manager.enroll<Kitty::Commands::Gambling::Roulette>();
     manager.enroll<Kitty::Commands::Gambling::Dice>();
@@ -111,7 +109,12 @@ namespace {
         user.level += 1;
         if (user.level % 5 == 0) user.xpstep += 5;
 
-        user.xpnext = static_cast<int>(std::floor(std::pow((user.level / level_increase), level_gap)));
+        user.xpnext = static_cast<int>(
+          std::floor(
+            std::pow(
+              (user.level / Kitty::Commands::Administrative::AddXP::level_increase), Kitty::Commands::Administrative::AddXP::level_gap)
+            )
+        );
       }
 
       event.reply(std::format("Congrats, {}! You've reached level {}!", event.msg.author.get_mention(), user.level));
@@ -125,6 +128,7 @@ namespace {
           UPDATE guildmember SET xp = $1, xpstep = $2, xpnext = $3, level = $4, coins = $5
           WHERE memberid = $6 AND guildid = $7;
         )",
+
         pqxx::params {
           user.xp, user.xpstep, user.xpnext, user.level, user.coins,
           static_cast<uint64_t>(event.msg.author.id),
@@ -141,7 +145,7 @@ namespace {
     }
   }
 
-  inline std::string require_env(const char* key) {
+  static std::string require_env(const char* key) {
     const char* value = std::getenv(key);
     if (!value) {
       std::cerr << "ERROR: Variable " << key << " is not set. Aborting." << std::endl;
