@@ -2,15 +2,16 @@
 
 #include "Commands/slash_command.h"
 #include "Services/shared_services.h"
-#include <dpp/cluster.h>
-#include <dpp/colors.h>
+#include "cluster.h"
+#include <memory>
+
 namespace Kitty::Commands::Administrative
 {
-  class RemoveCoins : public Commands::SlashCommand
+  class ModNotes : public Commands::SlashCommand
   {
   public:
-    RemoveCoins(dpp::cluster* client, std::shared_ptr<Services::SharedServices> services)
-      : Commands::SlashCommand("removecoins", "Remove coins from a user.")
+    ModNotes(dpp::cluster* client, std::shared_ptr<Services::SharedServices> services)
+      : Commands::SlashCommand("modnotes", "Manage the server's note options!")
     {
       this->m_permissions = dpp::permissions::p_administrator;
 

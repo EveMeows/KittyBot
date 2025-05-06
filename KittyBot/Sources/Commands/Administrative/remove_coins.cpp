@@ -1,4 +1,5 @@
 #include "Commands/Administrative/remove_coins.h"
+#include "Services/db.h"
 #include "dpp/appcommand.h"
 #include <vector>
 
@@ -18,7 +19,7 @@ void Kitty::Commands::Administrative::RemoveCoins::execute(const dpp::slashcomma
     event.reply("Your guild is not yet part of the database! Run /enroll.");
     return;
   }
-  
+
   std::optional<long> coins = this->param<long>("coins", event);
   if (!coins)
   {
@@ -30,7 +31,7 @@ void Kitty::Commands::Administrative::RemoveCoins::execute(const dpp::slashcomma
   std::optional<dpp::snowflake> id = this->param<dpp::snowflake>("user", event);
   if (id) user = event.command.get_resolved_user(*id);
 
-  
+
   if (*coins <= 0 || user.is_bot())
   {
     event.reply("You can't do that!");
@@ -44,7 +45,7 @@ void Kitty::Commands::Administrative::RemoveCoins::execute(const dpp::slashcomma
     event.reply(std::format("{} doesn't have enough coins for this!", user.get_mention()));
     return;
   }
-  
+
   db_user.coins -= *coins;
 
   // Update user
@@ -76,6 +77,6 @@ void Kitty::Commands::Administrative::RemoveCoins::execute(const dpp::slashcomma
     .set_title("Coins transaction results!")
     .set_description(std::format("Successfully removed {} coins from {}'s bank account!", *coins, user.get_mention()))
     .set_colour(dpp::colours::yellow);
-  
-  event.reply(embed); 
+
+  event.reply(embed);
 }

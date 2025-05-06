@@ -2,5 +2,8 @@
 
 # Where the token and other API keys go.
 .env
+
+# Some other bullshit
 **/.cache
-**/*.kdev4
+CMakeUserPresets.json
+compile_commands.json

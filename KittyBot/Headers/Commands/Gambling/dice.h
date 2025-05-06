@@ -22,12 +22,12 @@ namespace Kitty::Commands::Gambling
     };
 
     std::vector<dpp::command_option> options() const override;
-    
+
     void execute(const dpp::slashcommand_t& event) override;
   private:
     bool is_empty(std::vector<dpp::command_data_option> options, const dpp::slashcommand_t& event);
     void update_user(Models::KUser user, uint64_t user_id, uint64_t guild_id);
-        
+
     dpp::cluster* m_client;
     std::shared_ptr<Services::SharedServices> m_services;
   };

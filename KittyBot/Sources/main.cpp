@@ -31,7 +31,7 @@
 #include <unordered_map>
 
 namespace {
-  static constexpr bool delete_defaults = false;
+  static constexpr bool delete_defaults = true;
 
   static std::function<void()> signal_handle;
   static void exit_handler(int signal)
@@ -59,14 +59,19 @@ namespace {
     manager.enroll<Kitty::Commands::Administrative::RemoveCoins>();
     // -- XP commands
     manager.enroll<Kitty::Commands::Administrative::AddXP>();
-    
+    // -- Note commands
+    // TODO
+
     // Gambling
     manager.enroll<Kitty::Commands::Gambling::Roulette>();
     manager.enroll<Kitty::Commands::Gambling::Dice>();
     // TODO: Slots
-    
+
     // Economy
     // TODO: Dailies and other bs
+
+    // Notes
+    // TODO: Notes (user level locked)
   }
 
   static std::unordered_map<uint64_t, std::time_t> user_cooldowns;
@@ -106,7 +111,7 @@ namespace {
       while (user.xp >= user.xpnext)
       {
         user.xp -= user.xpnext;
-        
+
         user.level += 1;
         if (user.level % 5 == 0) user.xpstep += 5;
 
@@ -136,7 +141,7 @@ namespace {
           static_cast<uint64_t>(event.msg.guild_id)
         }
       );
- 
+
       trans.commit();
     }
     catch (const std::exception& e)
@@ -152,7 +157,7 @@ namespace {
       std::cerr << "ERROR: Variable " << key << " is not set. Aborting." << std::endl;
       exit(1);
     }
-    
+
     return value;
   }
 }
@@ -195,7 +200,7 @@ int main()
     std::cout << "INFO: Dropped default tables." << std::endl;
   }
 
-  if (!Kitty::Services::DB::Init::create_base_tables(services)) return -1;  
+  if (!Kitty::Services::DB::Init::create_base_tables(services)) return -1;
   std::cout << "INFO: Created default tables." << std::endl;
 
   // Create client cluster
@@ -223,7 +228,7 @@ int main()
   // Create command manager.
   Kitty::Commands::CommandManager manager(&client, services);
   register_commands(manager);
-  
+
   client.on_slashcommand(
     [&manager](const dpp::slashcommand_t &event) {
       manager.handle(event);
