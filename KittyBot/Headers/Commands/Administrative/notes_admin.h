@@ -2,6 +2,7 @@
 
 #include "Commands/slash_command.h"
 #include "Services/shared_services.h"
+#include "appcommand.h"
 #include "cluster.h"
 #include <memory>
 
@@ -24,5 +25,11 @@ namespace Kitty::Commands::Administrative
   private:
     dpp::cluster* m_client;
     std::shared_ptr<Services::SharedServices> m_services;
+
+    // Commands
+    void creation(const dpp::slashcommand_t& event, const dpp::command_data_option& subcmd);
+    void level(const dpp::slashcommand_t& event, const dpp::command_data_option& subcmd);
+    void prefix(const dpp::slashcommand_t& event, const dpp::command_data_option& subcmd);
+    void stats(const dpp::slashcommand_t& event, const dpp::command_data_option& subcmd);
   };
 }
