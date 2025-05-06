@@ -52,12 +52,8 @@ void Kitty::Commands::Administrative::ModNotes::execute(const dpp::slashcommand_
   dpp::command_data_option subcmd = cmd.options[0];
 
   // wtf
-  if (subcmd.name == "usercreation")
-    this->creation(event, subcmd);
-  else if (subcmd.name == "userlevel")
-    this->level(event, subcmd);
-  else if (subcmd.name == "prefix")
-    this->prefix(event, subcmd);
-  else if (subcmd.name == "stats")
-    this->stats(event, subcmd);
+  if (subcmd.name == "usercreation")   this->creation(event, subcmd);
+  else if (subcmd.name == "userlevel") this->level(event, subcmd);
+  else if (subcmd.name == "prefix")    this->prefix(event, subcmd);
+  else if (subcmd.name == "stats")     this->stats(event, subcmd);
 }

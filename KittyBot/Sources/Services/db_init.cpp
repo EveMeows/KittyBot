@@ -39,24 +39,25 @@ bool Kitty::Services::DB::Init::create_base_tables(std::shared_ptr<Kitty::Servic
     pqxx::work trans(*shared->client);
 
     trans.exec(R"(
-        CREATE TABLE IF NOT EXISTS note (
-          id BIGINT PRIMARY KEY,
-          name TEXT,
-          content TEXT
-
-          guildid BIGINT NOT NULL,
-          FOREIGN KEY (guild_id) REFERENCES guild(id) ON DELETE CASCADE
-        )
-      )"
-    );
-
-    trans.exec(R"(
         CREATE TABLE IF NOT EXISTS guild (
           id BIGINT PRIMARY KEY,
 
           noteprefix TEXT DEFAULT '$',
-          noteminlevel INT DEFAULT 1
+          noteminlevel INT DEFAULT 1,
+          noteallow BOOLEAN DEFAULT TRUE
         );
+      )"
+    );
+
+    trans.exec(R"(
+        CREATE TABLE IF NOT EXISTS note (
+          id BIGINT PRIMARY KEY,
+          name TEXT,
+          content TEXT,
+
+          guildid BIGINT NOT NULL,
+          FOREIGN KEY (guildid) REFERENCES guild(id) ON DELETE CASCADE
+        )
       )"
     );
 
