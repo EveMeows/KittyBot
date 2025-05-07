@@ -1,6 +1,7 @@
 #include "Commands/Administrative/add_coins.h"
 #include "Commands/Administrative/add_xp.h"
 #include "Commands/Administrative/enroll.h"
+#include "Commands/Administrative/notes_admin.h"
 #include "Commands/Administrative/remove_coins.h"
 #include "Commands/Gambling/roulette.h"
 #include "Commands/User/uinfo.h"
@@ -60,7 +61,7 @@ namespace {
     // -- XP commands
     manager.enroll<Kitty::Commands::Administrative::AddXP>();
     // -- Note commands
-    // TODO
+    manager.enroll<Kitty::Commands::Administrative::ModNotes>();
 
     // Gambling
     manager.enroll<Kitty::Commands::Gambling::Roulette>();

@@ -1,7 +1,14 @@
 #include "Commands/Administrative/notes_admin.h"
 #include "Services/db.h"
+#include "Services/shared_services.h"
+#include "message.h"
+#include <ctime>
 #include <dpp/appcommand.h>
 #include <dpp/dispatcher.h>
+#include <exception>
+#include <format>
+#include <pqxx/internal/statement_parameters.hxx>
+#include <stdexcept>
 #include <vector>
 
 std::vector<dpp::command_option> Kitty::Commands::Administrative::ModNotes::options() const
@@ -20,25 +27,134 @@ std::vector<dpp::command_option> Kitty::Commands::Administrative::ModNotes::opti
   };
 }
 
-void Kitty::Commands::Administrative::ModNotes::creation(const dpp::slashcommand_t& event, const dpp::command_data_option& subcmd)
+// #region
+void Kitty::Commands::Administrative::ModNotes::creation(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd)
 {
+  try
+  {
+    pqxx::work trans(*this->m_services->client);
 
+    uint64_t gid = static_cast<uint64_t>(event.command.guild_id);
+    bool allow = subcmd.get_value<bool>(0);
+
+    trans.exec(R"(
+        UPDATE guild SET noteallow = $1 WHERE id = $2
+      )",
+      pqxx::params {
+        allow, gid
+      }
+    );
+
+    trans.commit();
+
+    event.reply("Updated note creation state!");
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "ERROR: Could not update data: " << e.what() << std::endl;
+  }
 }
 
-void Kitty::Commands::Administrative::ModNotes::level(const dpp::slashcommand_t& event, const dpp::command_data_option& subcmd)
+void Kitty::Commands::Administrative::ModNotes::level(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd)
 {
+  try
+  {
+    pqxx::work trans(*this->m_services->client);
 
+    uint64_t gid = static_cast<uint64_t>(event.command.guild_id);
+    long int lvl = subcmd.get_value<long int>(0);
+
+    trans.exec(R"(
+        UPDATE guild SET noteminlevel = $1 WHERE id = $2
+      )",
+      pqxx::params {
+        lvl, gid
+      }
+    );
+
+    trans.commit();
+
+    event.reply("Updated note level!");
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "ERROR: Could not update data: " << e.what() << std::endl;
+  }
 }
 
-void Kitty::Commands::Administrative::ModNotes::prefix(const dpp::slashcommand_t& event, const dpp::command_data_option& subcmd)
+void Kitty::Commands::Administrative::ModNotes::prefix(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd)
 {
+  try
+  {
+    pqxx::work trans(*this->m_services->client);
 
+    uint64_t gid = static_cast<uint64_t>(event.command.guild_id);
+    std::string prefix = subcmd.get_value<std::string>(0);
+
+    trans.exec(R"(
+        UPDATE guild SET noteprefix = $1 WHERE id = $2
+      )",
+      pqxx::params {
+        prefix, gid
+      }
+    );
+
+    trans.commit();
+
+    event.reply("Updated note prefix!");
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "ERROR: Could not update data: " << e.what() << std::endl;
+  }
 }
 
-void Kitty::Commands::Administrative::ModNotes::stats(const dpp::slashcommand_t& event, const dpp::command_data_option& subcmd)
+void Kitty::Commands::Administrative::ModNotes::stats(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd)
 {
+  try
+  {
+    pqxx::work trans(*this->m_services->client);
+    pqxx::result query = trans.exec(R"(
+        SELECT id, noteprefix, noteminlevel, noteallow FROM guild
+        WHERE id = $1
+      )",
+      pqxx::params {
+        static_cast<uint64_t>(event.command.guild_id)
+      }
+    );
 
+    if (query.empty())
+    {
+      throw new std::runtime_error("Query returned nothing.");
+    }
+
+    pqxx::row result = query.back();
+
+    std::string description = std::format(
+      "Prefix: {}\nMinimum Level: {}\nUser Creation: {}",
+      result["noteprefix"].as<std::string>(), result["noteminlevel"].as<int>(),
+      result["noteallow"].as<bool>()
+    );
+
+    dpp::user issuing = event.command.get_issuing_user();
+    dpp::embed embed = dpp::embed()
+      .set_title("Note status for this server!")
+      .set_description(description)
+      .set_footer(
+        dpp::embed_footer()
+          .set_text(std::format("Requested by: {}", issuing.format_username()))
+          .set_icon(issuing.get_avatar_url())
+      )
+      .set_timestamp(std::time(nullptr));
+
+    event.reply(embed);
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "ERROR: Could not update data: " << e.what() << std::endl;
+  }
 }
+// #endregion
 
 void Kitty::Commands::Administrative::ModNotes::execute(const dpp::slashcommand_t& event)
 {

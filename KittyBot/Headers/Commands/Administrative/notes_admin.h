@@ -27,9 +27,9 @@ namespace Kitty::Commands::Administrative
     std::shared_ptr<Services::SharedServices> m_services;
 
     // Commands
-    void creation(const dpp::slashcommand_t& event, const dpp::command_data_option& subcmd);
-    void level(const dpp::slashcommand_t& event, const dpp::command_data_option& subcmd);
-    void prefix(const dpp::slashcommand_t& event, const dpp::command_data_option& subcmd);
-    void stats(const dpp::slashcommand_t& event, const dpp::command_data_option& subcmd);
+    void creation(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd);
+    void level(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd);
+    void prefix(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd);
+    void stats(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd);
   };
 }
