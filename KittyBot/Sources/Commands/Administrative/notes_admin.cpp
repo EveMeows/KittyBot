@@ -123,13 +123,9 @@ void Kitty::Commands::Administrative::ModNotes::stats(const dpp::slashcommand_t&
       }
     );
 
-    if (query.empty())
-    {
-      throw new std::runtime_error("Query returned nothing.");
-    }
+    if (query.empty()) throw new std::runtime_error("Query returned nothing.");
 
     pqxx::row result = query.back();
-
     std::string description = std::format(
       "Prefix: {}\nMinimum Level: {}\nUser Creation: {}",
       result["noteprefix"].as<std::string>(), result["noteminlevel"].as<int>(),

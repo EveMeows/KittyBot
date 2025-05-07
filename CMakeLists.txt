@@ -66,6 +66,7 @@ add_executable(${PROJECT_NAME}
 
     KittyBot/Sources/Commands/ping.cpp
     KittyBot/Sources/Commands/kitty.cpp
+    KittyBot/Sources/Commands/notes.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
