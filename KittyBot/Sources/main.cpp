@@ -7,6 +7,7 @@
 #include "Commands/User/uinfo.h"
 #include "Commands/kitty.h"
 #include "Commands/manager.h"
+#include "Commands/notes.h"
 #include "Commands/ping.h"
 #include "Commands/Gambling/dice.h"
 #include "Models/user.h"
@@ -32,7 +33,7 @@
 #include <unordered_map>
 
 namespace {
-  static constexpr bool delete_defaults = true;
+  static constexpr bool delete_defaults = false;
 
   static std::function<void()> signal_handle;
   static void exit_handler(int signal)
@@ -72,7 +73,7 @@ namespace {
     // TODO: Dailies and other bs
 
     // Notes
-    // TODO: Notes (user level locked)
+    manager.enroll<Kitty::Commands::Notes>();
   }
 
   static std::unordered_map<uint64_t, std::time_t> user_cooldowns;

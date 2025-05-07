@@ -1,15 +1,18 @@
 #include "Services/db.h"
+#include "Models/guild.h"
 #include "Models/user.h"
 #include "Services/shared_services.h"
 #include <dpp/snowflake.h>
 #include <exception>
 #include <iostream>
+#include <optional>
 #include <pqxx/internal/statement_parameters.hxx>
+#include <stdexcept>
 
 Kitty::Models::KUser Kitty::Services::DB::ensure_user(std::shared_ptr<Services::SharedServices> services, dpp::snowflake member_id, dpp::snowflake guild_id)
 {
   Kitty::Models::KUser user;
-  
+
   try
   {
     pqxx::work trans(*services->client);
@@ -20,13 +23,13 @@ Kitty::Models::KUser Kitty::Services::DB::ensure_user(std::shared_ptr<Services::
         FROM guildmember gm
         WHERE gm.memberid = $1 AND gm.guildid = $2;
       )",
-        
+
       pqxx::params {
         static_cast<uint64_t>(member_id),
         static_cast<uint64_t>(guild_id)
       }
     );
-    
+
     if (!res.empty())
     {
       for (const pqxx::row row : res)
@@ -37,7 +40,7 @@ Kitty::Models::KUser Kitty::Services::DB::ensure_user(std::shared_ptr<Services::
         user.xp = row["xp"].as<int>();
         user.xpstep = row["xpstep"].as<int>();
         user.xpnext = row["xpnext"].as<int>();
-        
+
         return user;
       }
     }
@@ -80,8 +83,38 @@ bool Kitty::Services::DB::guild_enrolled(std::shared_ptr<Services::SharedService
   catch (const std::exception& e)
   {
     std::cerr << "ERROR: Could not fetch database guild: " << e.what() << std::endl;
-    return false;
   }
-  
+
   return false;
+}
+
+std::optional<Kitty::Models::KGuild> Kitty::Services::DB::maybe_guild(std::shared_ptr<Services::SharedServices> services, dpp::snowflake guild_id)
+{
+  try
+  {
+    pqxx::work trans(*services->client);
+
+    pqxx::result query = trans.exec(R"(
+        SELECT id, noteprefix, noteminlevel, noteallow
+        FROM guild WHERE id = $1;
+      )",
+      pqxx::params { static_cast<uint64_t>(guild_id) }
+    );
+
+    if (query.empty()) throw std::runtime_error("Query returned nothing.");
+
+    pqxx::row guild = query.back();
+
+    return Models::KGuild {
+      guild["noteprefix"].as<std::string>(),
+      guild["noteminlevel"].as<int>(),
+      guild["noteallow"].as<bool>()
+    };
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "ERROR: Could not fetch database guild: " << e.what() << std::endl;
+  }
+
+  return std::nullopt;
 }
