@@ -31,5 +31,8 @@ namespace Kitty::Commands::Administrative
     void level(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd);
     void prefix(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd);
     void stats(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd);
+
+    void erase(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd);
+    void edit(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd);
   };
 }

@@ -177,6 +177,89 @@ void Kitty::Commands::Administrative::ModNotes::stats(const dpp::slashcommand_t&
     std::cerr << "ERROR: Could not update data: " << e.what() << std::endl;
   }
 }
+
+void Kitty::Commands::Administrative::ModNotes::erase(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd)
+{
+  try
+  {
+    uint64_t gid = static_cast<uint64_t>(event.command.guild_id);
+    std::string name = subcmd.get_value<std::string>(0);
+
+    pqxx::work trans(*this->m_services->client);
+
+    pqxx::result exists = trans.exec(R"(
+        SELECT name, guildid FROM note WHERE guildid = $1 AND name = $2
+      )",
+      pqxx::params {
+        gid, name
+      }
+    );
+
+    if (exists.empty())
+    {
+      event.reply("A note by that name does not exist!");
+      return;
+    }
+
+    trans.exec(R"(
+        DELETE FROM note WHERE guildid = $1 AND name = $2
+      )",
+      pqxx::params {
+        gid, name
+      }
+    );
+
+    trans.commit();
+
+    event.reply(std::format("Successfully deleted note {}!", name));
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "ERROR: Cannot erase note: " << e.what() << std::endl;
+  }
+}
+
+void Kitty::Commands::Administrative::ModNotes::edit(const dpp::slashcommand_t& event, dpp::command_data_option& subcmd)
+{
+  try
+  {
+    uint64_t gid = static_cast<uint64_t>(event.command.guild_id);
+    std::string name = subcmd.get_value<std::string>(0);
+    std::string content = subcmd.get_value<std::string>(1);
+
+    pqxx::work trans(*this->m_services->client);
+
+    pqxx::result exists = trans.exec(R"(
+        SELECT name, guildid FROM note WHERE guildid = $1 AND name = $2
+      )",
+      pqxx::params {
+        gid, name
+      }
+    );
+
+    if (exists.empty())
+    {
+      event.reply("A note by that name does not exist!");
+      return;
+    }
+
+    trans.exec(R"(
+        UPDATE note SET content = $1 WHERE guildid = $2 AND name = $3
+      )",
+      pqxx::params {
+        content, gid, name
+      }
+    );
+
+    trans.commit();
+
+    event.reply(std::format("Successfully updated note {}!", name));
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "ERROR: Cannot edit note: " << e.what() << std::endl;
+  }
+}
 // #endregion
 
 void Kitty::Commands::Administrative::ModNotes::execute(const dpp::slashcommand_t& event)
@@ -195,4 +278,6 @@ void Kitty::Commands::Administrative::ModNotes::execute(const dpp::slashcommand_
   else if (subcmd.name == "userlevel") this->level(event, subcmd);
   else if (subcmd.name == "prefix")    this->prefix(event, subcmd);
   else if (subcmd.name == "stats")     this->stats(event, subcmd);
+  else if (subcmd.name == "erase")     this->erase(event, subcmd);
+  else if (subcmd.name == "edit")      this->edit(event, subcmd);
 }

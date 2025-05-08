@@ -64,6 +64,22 @@ void Kitty::Commands::Notes::create(const dpp::slashcommand_t& event, dpp::comma
     std::string content = subcmd.get_value<std::string>(1);
 
     pqxx::work trans(*this->m_services->client);
+
+    // Check if note already exists.
+    pqxx::result exists = trans.exec(R"(
+        SELECT name, guildid FROM note WHERE guildid = $1 AND name = $2
+      )",
+      pqxx::params {
+        gid, name
+      }
+    );
+
+    if (!exists.empty())
+    {
+      event.reply("A note by that name already exists!");
+      return;
+    }
+
     trans.exec(R"(
         INSERT INTO note (name, content, guildid) VALUES ($1, $2, $3);
       )",
