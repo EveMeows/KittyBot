@@ -26,6 +26,13 @@ std::vector<dpp::command_option> Kitty::Commands::Administrative::ModNotes::opti
       .add_option(dpp::command_option(dpp::command_option_type::co_string, "prefix", "The prefix.", true)),
 
     dpp::command_option(dpp::command_option_type::co_sub_command, "stats", "Show the notes stats."),
+
+    dpp::command_option(dpp::command_option_type::co_sub_command, "erase", "Erase a note!")
+      .add_option(dpp::command_option(dpp::command_option_type::co_string, "name", "Note name.", true)),
+
+    dpp::command_option(dpp::command_option_type::co_sub_command, "edit", "Edit a note!")
+      .add_option(dpp::command_option(dpp::command_option_type::co_string, "name", "Note name.", true))
+      .add_option(dpp::command_option(dpp::command_option_type::co_string, "content", "New note content.", true)),
   };
 }
 

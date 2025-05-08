@@ -18,7 +18,7 @@ std::vector<dpp::command_option> Kitty::Commands::Notes::options() const
       .add_option(dpp::command_option(dpp::command_option_type::co_string, "content", "Note content.", true)),
 
     dpp::command_option(dpp::command_option_type::co_sub_command, "use", "Use a note!")
-      .add_option(dpp::command_option(dpp::command_option_type::co_string, "name", "Note name.", true))
+      .add_option(dpp::command_option(dpp::command_option_type::co_string, "name", "Note name.", true)),
   };
 }
 
