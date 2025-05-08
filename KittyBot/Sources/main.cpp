@@ -10,6 +10,7 @@
 #include "Commands/notes.h"
 #include "Commands/ping.h"
 #include "Commands/Gambling/dice.h"
+#include "Models/guild.h"
 #include "Models/user.h"
 #include "Services/db.h"
 #include "Services/db_init.h"
@@ -30,6 +31,8 @@
 #include <dpp/misc-enum.h>
 #include <iostream>
 #include <memory>
+#include <optional>
+#include <stdexcept>
 #include <unordered_map>
 
 namespace {
@@ -83,7 +86,37 @@ namespace {
     if (event.msg.author.is_bot()) return;
 
     // Check DB
-    if (!Kitty::Services::DB::guild_enrolled(services, event.msg.guild_id)) return;
+    std::optional<Kitty::Models::KGuild> guild = Kitty::Services::DB::maybe_guild(services, event.msg.guild_id);
+    if (!guild) return;
+
+    // #region Note
+    std::string msg = event.msg.content;
+    if (msg.starts_with(guild->note_prefix))
+    {
+      // We do not have a split func lmao
+      std::string rest = msg.substr(guild->note_prefix.size());
+      size_t space = rest.find(' ');
+      std::string name = (space == std::string::npos) ? rest : rest.substr(0, space);
+
+      try
+      {
+        pqxx::work trans(*services->client);
+        pqxx::result query = trans.exec(
+          "SELECT name, content, guildid FROM note WHERE guildid = $1 AND name = $2",
+          pqxx::params { static_cast<uint64_t>(event.msg.guild_id), name }
+        );
+
+        if (query.empty()) throw std::runtime_error("No note lmao.");
+
+        pqxx::row note = query.back();
+        event.reply(note["content"].as<std::string>());
+      }
+      catch (const std::exception& e)
+      {
+        std::cerr << "ERROR: Cannot find note message: " << e.what() << std::endl;
+      }
+    }
+    // #endregion
 
     // Check if the user is in cooldown. (2s)
     uint64_t uid = event.msg.author.id;

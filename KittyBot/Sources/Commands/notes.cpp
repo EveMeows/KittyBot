@@ -49,6 +49,18 @@ void Kitty::Commands::Notes::create(const dpp::slashcommand_t& event, dpp::comma
   try
   {
     std::string name = subcmd.get_value<std::string>(0);
+    int spaces = std::count_if(
+      name.begin(),
+      name.end(),
+      [](unsigned char c) { return std::isspace(c); }
+    );
+
+    if (spaces != 0)
+    {
+      event.reply("A note name cannot have spaces!");
+      return;
+    }
+
     std::string content = subcmd.get_value<std::string>(1);
 
     pqxx::work trans(*this->m_services->client);
