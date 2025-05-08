@@ -51,9 +51,9 @@ bool Kitty::Services::DB::Init::create_base_tables(std::shared_ptr<Kitty::Servic
 
     trans.exec(R"(
         CREATE TABLE IF NOT EXISTS note (
-          id BIGINT PRIMARY KEY,
-          name TEXT,
-          content TEXT,
+          id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+          name TEXT NOT NULL,
+          content TEXT NOT NULL,
 
           guildid BIGINT NOT NULL,
           FOREIGN KEY (guildid) REFERENCES guild(id) ON DELETE CASCADE

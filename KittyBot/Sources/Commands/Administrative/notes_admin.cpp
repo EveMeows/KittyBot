@@ -2,6 +2,8 @@
 #include "Services/db.h"
 #include "Services/shared_services.h"
 #include "message.h"
+#include <algorithm>
+#include <cctype>
 #include <ctime>
 #include <dpp/appcommand.h>
 #include <dpp/dispatcher.h>
@@ -63,6 +65,11 @@ void Kitty::Commands::Administrative::ModNotes::level(const dpp::slashcommand_t&
 
     uint64_t gid = static_cast<uint64_t>(event.command.guild_id);
     long int lvl = subcmd.get_value<long int>(0);
+    if (lvl < 1)
+    {
+      event.reply("The minimum level cannot be lower than 1.");
+      return;
+    }
 
     trans.exec(R"(
         UPDATE guild SET noteminlevel = $1 WHERE id = $2
@@ -90,6 +97,19 @@ void Kitty::Commands::Administrative::ModNotes::prefix(const dpp::slashcommand_t
 
     uint64_t gid = static_cast<uint64_t>(event.command.guild_id);
     std::string prefix = subcmd.get_value<std::string>(0);
+
+    // Check for whitespace (prefix cannot have spaces.)
+    int spaces = std::count_if(
+      prefix.begin(),
+      prefix.end(),
+      [](unsigned char c) { return std::isspace(c); }
+    );
+
+    if (spaces != 0)
+    {
+      event.reply("A prefix cannot have spaces!");
+      return;
+    }
 
     trans.exec(R"(
         UPDATE guild SET noteprefix = $1 WHERE id = $2
