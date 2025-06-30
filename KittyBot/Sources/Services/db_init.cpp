@@ -80,6 +80,8 @@ bool Kitty::Services::DB::Init::create_base_tables(std::shared_ptr<Kitty::Servic
 
           level INT DEFAULT 1,
 
+          lastclaimed TIMESTAMP DEFAULT '1970-01-01 02:00:00',
+
           PRIMARY KEY (guildid, memberid),
           FOREIGN KEY (guildid) REFERENCES guild(id) ON DELETE CASCADE,
           FOREIGN KEY (memberid) REFERENCES member(id) ON DELETE CASCADE

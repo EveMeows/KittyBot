@@ -16,7 +16,7 @@ find_package(DPP QUIET)
 if (NOT DPP_FOUND)
     if (USE_EMBEDDED_DPP)
         set(DPP_BUILD_STATIC ON CACHE BOOL "Force static build of DPP")
-        
+
         message(STATUS "DPP (The Discord API wrapper) has not been found. Using Built-in.")
 
         FetchContent_Declare(
@@ -69,6 +69,7 @@ add_executable(${PROJECT_NAME}
     KittyBot/Sources/Commands/ping.cpp
     KittyBot/Sources/Commands/kitty.cpp
     KittyBot/Sources/Commands/notes.cpp
+    KittyBot/Sources/Commands/daily.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

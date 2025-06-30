@@ -5,6 +5,7 @@
 #include "Commands/Administrative/remove_coins.h"
 #include "Commands/Gambling/roulette.h"
 #include "Commands/User/uinfo.h"
+#include "Commands/daily.h"
 #include "Commands/kitty.h"
 #include "Commands/manager.h"
 #include "Commands/notes.h"
@@ -73,7 +74,8 @@ namespace {
     // TODO: Slots
 
     // Economy
-    // TODO: Dailies and other bs
+    manager.enroll<Kitty::Commands::Daily>();
+    // TODO: Other bs
 
     // Notes
     manager.enroll<Kitty::Commands::Notes>();

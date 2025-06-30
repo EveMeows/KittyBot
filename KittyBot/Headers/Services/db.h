@@ -10,6 +10,9 @@ namespace Kitty::Services::DB
 {
   Models::KUser ensure_user(std::shared_ptr<Services::SharedServices> services, dpp::snowflake member_id, dpp::snowflake guild_id);
 
+  [[nodiscard("Cannot discard this value.")]]
   bool guild_enrolled(std::shared_ptr<Services::SharedServices> services, dpp::snowflake guild_id);
+
+  [[nodiscard("Cannot discard this value.")]]
   std::optional<Models::KGuild> maybe_guild(std::shared_ptr<Services::SharedServices> services, dpp::snowflake guild_id);
 }

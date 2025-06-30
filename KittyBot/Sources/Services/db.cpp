@@ -8,6 +8,7 @@
 #include <optional>
 #include <pqxx/internal/statement_parameters.hxx>
 #include <stdexcept>
+#include <string>
 
 Kitty::Models::KUser Kitty::Services::DB::ensure_user(std::shared_ptr<Services::SharedServices> services, dpp::snowflake member_id, dpp::snowflake guild_id)
 {
@@ -19,7 +20,7 @@ Kitty::Models::KUser Kitty::Services::DB::ensure_user(std::shared_ptr<Services::
 
     pqxx::result res = trans.exec(R"(
         SELECT
-          gm.memberid, gm.coins, gm.xp, gm.xpstep, gm.xpnext, gm.level
+          gm.memberid, gm.coins, gm.xp, gm.xpstep, gm.xpnext, gm.level, gm.lastclaimed
         FROM guildmember gm
         WHERE gm.memberid = $1 AND gm.guildid = $2;
       )",
@@ -41,6 +42,8 @@ Kitty::Models::KUser Kitty::Services::DB::ensure_user(std::shared_ptr<Services::
         user.xpstep = row["xpstep"].as<int>();
         user.xpnext = row["xpnext"].as<int>();
 
+        user.lastclaimed = row["lastclaimed"].as<std::string>();
+
         return user;
       }
     }
@@ -54,6 +57,7 @@ Kitty::Models::KUser Kitty::Services::DB::ensure_user(std::shared_ptr<Services::
     user.xp = 0;
     user.xpstep = 1;
     user.xpnext = 30;
+    user.lastclaimed = "1970-01-01 02:00:00";
 
     std::cout << "Enrolled user " << static_cast<uint64_t>(member_id) << " into the database." << std::endl;
 
@@ -66,7 +70,6 @@ Kitty::Models::KUser Kitty::Services::DB::ensure_user(std::shared_ptr<Services::
 
   return user;
 }
-
 
 bool Kitty::Services::DB::guild_enrolled(std::shared_ptr<Services::SharedServices> services, dpp::snowflake guild_id)
 {
