@@ -1,7 +1,7 @@
 #include "Commands/Administrative/notes_admin.h"
 #include "Services/db.h"
 #include "Services/shared_services.h"
-#include "message.h"
+#include "dpp/message.h"
 #include <algorithm>
 #include <cctype>
 #include <ctime>

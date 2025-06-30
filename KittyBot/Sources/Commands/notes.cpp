@@ -3,9 +3,9 @@
 #include "Models/user.h"
 #include "Services/db.h"
 #include "Services/shared_services.h"
-#include "appcommand.h"
-#include "dispatcher.h"
-#include "snowflake.h"
+#include "dpp/appcommand.h"
+#include "dpp/dispatcher.h"
+#include "dpp/snowflake.h"
 #include <cstdint>
 #include <exception>
 #include <optional>

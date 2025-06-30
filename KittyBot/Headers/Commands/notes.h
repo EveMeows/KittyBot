@@ -2,7 +2,7 @@
 
 #include "Commands/slash_command.h"
 #include "Services/shared_services.h"
-#include "cluster.h"
+#include "dpp/cluster.h"
 #include <memory>
 namespace Kitty::Commands
 {
