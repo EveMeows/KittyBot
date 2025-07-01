@@ -17,8 +17,14 @@ std::vector<dpp::command_option> Kitty::Commands::User::UserInfo::options() cons
 
 void Kitty::Commands::User::UserInfo::execute(const dpp::slashcommand_t& event)
 {
+  if (event.command.get_issuing_user().is_bot())
+  {
+    event.reply("That is a robot.");
+    return;
+  }
+
   uint64_t guild_id = static_cast<uint64_t>(event.command.guild_id);
-  
+
   // Check DB state
   if (!Services::DB::guild_enrolled(this->m_services, guild_id))
   {
@@ -30,14 +36,14 @@ void Kitty::Commands::User::UserInfo::execute(const dpp::slashcommand_t& event)
   dpp::user user = event.command.get_issuing_user();
   std::optional<dpp::snowflake> uid = this->param<dpp::snowflake>("user", event);
   if (uid) user = event.command.get_resolved_user(*uid);
-  
+
   uint64_t user_id = static_cast<uint64_t>(user.id);
 
   // Create user if not exists
   Models::KUser kuser = Services::DB::ensure_user(this->m_services, user_id, guild_id);
 
   dpp::user issuing = event.command.get_issuing_user();
-  
+
   int p = std::floor((static_cast<double>(kuser.xp) / kuser.xpnext) * 100);
   std::string stats = std::format(
     "Data statistics for {}.\n{} Coins\nLevel: {}\nXP: {}/{} ({}%)",
@@ -45,7 +51,7 @@ void Kitty::Commands::User::UserInfo::execute(const dpp::slashcommand_t& event)
     kuser.level,
     kuser.xp, kuser.xpnext, p
   );
-  
+
   dpp::embed e = dpp::embed()
     // Top
     .set_title("User statistics!")
